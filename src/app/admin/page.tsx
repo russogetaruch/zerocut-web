@@ -32,19 +32,15 @@ export default async function TenantAdminDashboard() {
              </h2>
           </div>
           <p className="font-mono text-zinc-500 text-[10px] tracking-[0.4em] uppercase flex items-center gap-2">
-             <Database size={10} className="text-primary" /> Active_Session: <span className="text-white bg-zinc-900 px-2 rounded">{tenantOwner?.name || "UNIDENTIFIED"}</span>
+             <Database size={10} className="text-primary" /> AMBIENTE: <span className="text-white bg-zinc-900 px-2 rounded">{tenantOwner?.name || "Não Identificado"}</span>
           </p>
         </div>
         
         <div className="flex gap-4">
            <div className="hidden lg:flex items-center gap-10 px-8 border-x border-zinc-200 mr-4">
                <div>
-                  <p className="text-[10px] text-zinc-400 uppercase tracking-wider mb-1">Status</p>
-                  <p className="text-xs text-green-600 font-semibold">Sistema Online</p>
-               </div>
-               <div>
-                  <p className="text-[10px] text-zinc-400 uppercase tracking-wider mb-1">Latência</p>
-                  <p className="text-xs text-zinc-900 font-semibold">14ms</p>
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-wider mb-1">Link Clicável</p>
+                  <p className="text-xs text-green-600 font-semibold">/b/{tenantOwner?.slug || "barbearia"}</p>
                </div>
            </div>
            <button className="font-mono text-[11px] text-black font-black tracking-[0.2em] uppercase bg-primary hover:bg-white transition-all px-10 py-4 rounded-xl shadow-[0_0_30px_rgba(212,175,55,0.2)] active:scale-95 group">

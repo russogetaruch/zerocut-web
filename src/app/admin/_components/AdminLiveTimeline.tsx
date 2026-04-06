@@ -57,16 +57,16 @@ export function AdminLiveTimeline({ initialAppointments, tenantId }: { initialAp
     <div className="space-y-10">
       {/* Vital Stats (Agora Dinâmicos no Cliente) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <VitalBox title="WAITING_QUEUE" value={waitingCount < 10 ? `0${waitingCount}` : waitingCount.toString()} icon={<Clock size={16}/>} isAlert={waitingCount > 0} />
-        <VitalBox title="COMPLETED_TODAY" value={completedCount < 10 ? `0${completedCount}` : completedCount.toString()} icon={<CheckCircle2 size={16}/>} />
-        <VitalBox title="DAILY_REVENUE" value={`R$ ${dailyRevenue.toFixed(2)}`} icon={<Activity size={16}/>} isGold />
-        <VitalBox title="EST_CLOSING" value={`R$ ${estClosing.toFixed(2)}`} icon={<Activity size={16}/>} />
+        <VitalBox title="FILA DE ESPERA" value={waitingCount < 10 ? `0${waitingCount}` : waitingCount.toString()} icon={<Clock size={16}/>} isAlert={waitingCount > 0} />
+        <VitalBox title="CONCLUÍDOS HOJE" value={completedCount < 10 ? `0${completedCount}` : completedCount.toString()} icon={<CheckCircle2 size={16}/>} />
+        <VitalBox title="RECEITA ROTITIVA" value={`R$ ${dailyRevenue.toFixed(2)}`} icon={<Activity size={16}/>} isGold />
+        <VitalBox title="FECHAMENTO EST." value={`R$ ${estClosing.toFixed(2)}`} icon={<Activity size={16}/>} />
       </div>
 
       {/* TimelineBoard */}
       <div className="mt-8">
         <h3 className="font-mono text-xs text-zinc-500 tracking-widest mb-4 uppercase">
-           [ Live_Update_Stream_On ] - Incoming Appointments
+           [ PRÓXIMOS AGENDAMENTOS NA FILA ]
         </h3>
         
         <div className="flex flex-col gap-3">
@@ -78,7 +78,7 @@ export function AdminLiveTimeline({ initialAppointments, tenantId }: { initialAp
                    tenantId={tenantId}
                    time={apt.appointment_time.substring(0, 5)} 
                    client={apt.client_name}
-                   service={apt.services?.name || "Serviço Premium"} 
+                   service={apt.services?.name || "Serviço Adicional"} 
                    price={apt.services?.price || 50}
                    status={apt.status} 
                    delay={idx * 0.05}
@@ -86,7 +86,7 @@ export function AdminLiveTimeline({ initialAppointments, tenantId }: { initialAp
              ))
           ) : (
              <div className="p-10 border border-dashed border-[#222] bg-[#050505] rounded-xl flex items-center justify-center text-zinc-500 font-mono text-xs uppercase tracking-widest">
-                [ NO_NEW_APPOINTMENTS - RELAX ]
+                [ NENHUM AGENDAMENTO PREVISTO ]
              </div>
           )}
         </div>

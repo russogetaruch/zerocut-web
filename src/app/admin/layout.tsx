@@ -56,7 +56,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </h1>
             <p className="text-[10px] text-zinc-600 font-mono tracking-widest mt-2 uppercase flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-primary/70 animate-pulse"></span>
-              {tenant?.name || "Tenant.Node"}
+              {tenant?.name || "Espaço"}
             </p>
           </Link>
         </div>
@@ -114,9 +114,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </nav>
 
         <div className="p-6 border-t border-[#151515]">
-          <button className="flex items-center gap-3 w-full p-3 rounded-md text-zinc-500 hover:text-white hover:bg-[#111] border border-transparent hover:border-[#222] transition-all text-xs font-mono tracking-wider">
+          <button className="flex items-center gap-3 w-full p-3 rounded-md text-zinc-500 hover:text-white hover:bg-[#111] border border-transparent hover:border-[#222] transition-all text-xs font-mono tracking-wider uppercase">
             <LogOut size={16} />
-            [ LOGOFF ]
+            Sair da Conta
           </button>
         </div>
       </aside>

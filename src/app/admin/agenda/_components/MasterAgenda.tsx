@@ -273,9 +273,9 @@ export function MasterAgenda({ initialAppointments, professionals }: { initialAp
                         </div>
 
                         <div className="text-right hidden md:block">
-                           <p className="text-xs text-zinc-600 font-mono uppercase tracking-widest mb-1">Operação</p>
+                           <p className="text-xs text-zinc-600 font-mono uppercase tracking-widest mb-1">Gerenciar</p>
                            <button className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-lg font-mono tracking-widest hover:bg-primary hover:text-black transition-all">
-                              VER_DETALHES
+                              ABRIR COMANDA
                            </button>
                         </div>
                      </div>
@@ -342,7 +342,7 @@ export function MasterAgenda({ initialAppointments, professionals }: { initialAp
                         <Scissors size={20} className="text-primary" />
                         <div>
                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest leading-none mb-1">Serviço</p>
-                           <p className="text-sm font-bold text-white uppercase tracking-wide">Corte Clássico</p>
+                           <p className="text-sm font-bold text-white uppercase tracking-wide">{selectedAppointment.services?.name || 'S/ Serviço'}</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-4 bg-zinc-900/40 p-4 rounded-2xl border border-[#1a1a1a]">
@@ -395,8 +395,8 @@ export function MasterAgenda({ initialAppointments, professionals }: { initialAp
                       <XCircle size={20} /> CANCELAR AGENDAMENTO
                     </button>
                   )}
-                  <button className="w-full bg-zinc-900 text-zinc-400 font-mono text-[10px] tracking-widest py-3 rounded-xl hover:text-white transition-colors">
-                     VER_FICHA_COMPLETA
+                  <button className="w-full bg-zinc-900 text-zinc-400 font-mono text-[10px] tracking-widest py-3 rounded-xl hover:text-white transition-colors uppercase">
+                     Ver Histórico de Cortes do Cliente
                   </button>
                </div>
             </motion.div>
