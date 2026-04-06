@@ -67,7 +67,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="space-y-2">
             <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Visão Geral</h4>
             <NavItem href="/admin" icon={<Activity size={16} />} label="INSIGHTS & CRESCIMENTO" />
-            <NavItem href="/admin/config" icon={<Settings size={16} />} label="MEU ESPAÇO" />
+            <NavItem href="/admin/configuracoes" icon={<Settings size={16} />} label="MEU ESPAÇO" />
           </div>
 
           {/* OPERACIONAL */}
