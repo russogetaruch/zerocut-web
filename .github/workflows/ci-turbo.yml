@@ -1,0 +1,69 @@
+name: CI Turbo - Zero Cut
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hardened Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (Turbo Ready)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # BUILT-IN: Cache global do npm
+          cache: 'npm'
+
+      - name: Cache dependencies (Layer 2)
+        id: npm-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          # RESTORE-KEYS: Se mudar o lock, ele ainda tenta baixar o mais próximo possível
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies (Speedy)
+        # Só roda se o cache não der 'hit' absoluto
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Cache Next.js Build (Incremental Nitro)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.next/cache
+          # Inclui o hash do código-fonte para invalidar adequadamente,
+          # mas restaurar builds parciais em caso de 'miss'.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', 'src/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Linting (Quality Gate)
+        run: npm run lint
+
+      - name: Typecheck (Type Safety)
+        run: npm run typecheck
+
+      - name: Next.js Turbo Build
+        run: npm run build
+        env:
+          # Inserir variáveis necessárias para o build, se houver
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Upload Build Artifact (Deploy Ready)
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+          retention-days: 7

@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  
+  /* Primary ZeroCut Gold */
+  --gold-50: #fbf8f1;
+  --gold-100: #f5eedb;
+  --gold-200: #ead9b2;
+  --gold-300: #dec183;
+  --gold-400: #d4af37; /* Base Gold */
+  --gold-500: #cc9b25;
+  --gold-600: #af781d;
+  --gold-700: #8c581a;
+  --gold-800: #75481d;
+  --gold-900: #623c1c;
+
+  --surface: #121212;
+  --surface-hover: #1a1a1a;
+  --border: #27272a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--gold-400);
+  --color-gold-50: var(--gold-50);
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-gold-800: var(--gold-800);
+  --color-gold-900: var(--gold-900);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
