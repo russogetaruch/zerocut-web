@@ -19,6 +19,36 @@ export async function updateAppointmentStatus(appointmentId: string, status: 'CO
   return { success: true };
 }
 
+export async function createAdminBooking(data: {
+  tenantId: string,
+  serviceId: string,
+  professionalId: string,
+  clientName: string,
+  appointmentDate: string,
+  appointmentTime: string
+}) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('appointments')
+    .insert([{
+      tenant_id: data.tenantId,
+      service_id: data.serviceId,
+      professional_id: data.professionalId,
+      client_name: data.clientName,
+      appointment_date: data.appointmentDate,
+      appointment_time: data.appointmentTime,
+      status: 'SCHEDULED'
+    }]);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/admin/agenda');
+  return { success: true };
+}
+
 export async function updateTenant(tenantId: string, data: { 
   name: string, 
   address: string, 

@@ -17,10 +17,11 @@ export default async function AdminAgendaPage() {
 
   if (!tenant) return <div>Tenant não encontrado.</div>;
 
-  // Buscar profissionais e agendamentos (Todos os status exceto CANCELED)
-  const [{ data: professionals }, { data: appointments }] = await Promise.all([
+  // Buscar profissionais, agendamentos e catálogo de serviços
+  const [{ data: professionals }, { data: appointments }, { data: services }] = await Promise.all([
     supabase.from('professionals').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: true }),
-    supabase.from('appointments').select('*').eq('tenant_id', tenant.id).neq('status', 'CANCELED')
+    supabase.from('appointments').select('*, services(*)').eq('tenant_id', tenant.id).neq('status', 'CANCELED'),
+    supabase.from('services').select('*').eq('tenant_id', tenant.id).order('name', { ascending: true })
   ]);
 
   return (
@@ -53,6 +54,7 @@ export default async function AdminAgendaPage() {
       <MasterAgenda 
         professionals={professionals || []} 
         initialAppointments={appointments || []} 
+        services={services || []}
       />
       
     </div>

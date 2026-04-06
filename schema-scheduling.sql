@@ -19,6 +19,7 @@ CREATE TABLE appointments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid REFERENCES tenants(id) ON DELETE CASCADE NOT NULL,
   service_id uuid REFERENCES services(id) ON DELETE RESTRICT,
+  professional_id uuid REFERENCES professionals(id),
   
   -- Dados do Cliente (Por hora, string livre como era no app mobile)
   client_name text NOT NULL,
