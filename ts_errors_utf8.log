@@ -1,0 +1,29 @@
+﻿.next/dev/types/validator.ts(193,31): error TS2344: Type 'typeof import("C:/Users/Getaruch/.gemini/antigravity/scratch/zerocut-web/src/app/b/[slug]/layout")' does not satisfy the constraint 'LayoutConfig<"/b/[slug]">'.
+  Types of property 'default' are incompatible.
+    Type '({ children, params }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'ComponentType<LayoutProps<"/b/[slug]">> | ((props: LayoutProps<"/b/[slug]">) => void | Promise<void> | ReactNode | Promise<...>)'.
+      Type '({ children, params }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'FunctionComponent<LayoutProps<"/b/[slug]">>'.
+        Types of parameters '__0' and 'props' are incompatible.
+          Type 'LayoutProps<"/b/[slug]">' is not assignable to type '{ children: ReactNode; params: { slug: string; }; }'.
+            Types of property 'params' are incompatible.
+              Property 'slug' is missing in type 'Promise<{ slug: string; }>' but required in type '{ slug: string; }'.
+.next/types/validator.ts(193,31): error TS2344: Type 'typeof import("C:/Users/Getaruch/.gemini/antigravity/scratch/zerocut-web/src/app/b/[slug]/layout")' does not satisfy the constraint 'LayoutConfig<"/b/[slug]">'.
+  Types of property 'default' are incompatible.
+    Type '({ children, params }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'ComponentType<LayoutProps<"/b/[slug]">> | ((props: LayoutProps<"/b/[slug]">) => void | Promise<void> | ReactNode | Promise<...>)'.
+      Type '({ children, params }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'FunctionComponent<LayoutProps<"/b/[slug]">>'.
+        Types of parameters '__0' and 'props' are incompatible.
+          Type 'LayoutProps<"/b/[slug]">' is not assignable to type '{ children: ReactNode; params: { slug: string; }; }'.
+            Types of property 'params' are incompatible.
+              Property 'slug' is missing in type 'Promise<{ slug: string; }>' but required in type '{ slug: string; }'.
+src/app/super-admin/_components/TenantFormModal.tsx(15,39): error TS2345: Argument of type 'FormData' is not assignable to parameter of type '{ name: string; slug: string; owner_id?: string | undefined; }'.
+  Type 'FormData' is missing the following properties from type '{ name: string; slug: string; owner_id?: string | undefined; }': name, slug
+src/app/super-admin/_components/TenantListAnimated.tsx(59,11): error TS2322: Type '{ hidden: { opacity: number; y: number; filter: string; }; show: { opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; }; }; }' is not assignable to type 'Variants'.
+  Property 'show' is incompatible with index signature.
+    Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; }; }' is not assignable to type 'Variant'.
+      Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ opacity: number; y: number; filter: string; transition: { type: string; stiffness: number; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ type: string; stiffness: number; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ type: string; stiffness: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ type: string; stiffness: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'type' are incompatible.
+                    Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.

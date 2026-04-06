@@ -1,4 +1,4 @@
-export default function TenantLayout({ children, params }: { children: React.ReactNode, params: { slug: string } }) {
+export default async function TenantLayout({ children, params }: { children: React.ReactNode, params: Promise<{ slug: string }> }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-border">

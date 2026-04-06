@@ -12,7 +12,9 @@ export default function TenantFormModal() {
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setErrorMsg("");
-    const result = await createTenant(formData);
+    const name = formData.get("name") as string;
+    const slug = formData.get("slug") as string;
+    const result = await createTenant({ name, slug });
     
     if (result.error) {
        setErrorMsg(result.error);

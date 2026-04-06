@@ -24,7 +24,9 @@ const containerVars = {
   },
 };
 
-const itemVars = {
+import type { Variants } from "framer-motion";
+
+const itemVars: Variants = {
   hidden: { opacity: 0, y: 15, filter: "blur(4px)" },
   show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 120 } },
 };
