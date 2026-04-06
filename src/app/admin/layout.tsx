@@ -21,6 +21,8 @@ import {
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { GlobalRealtimeProvider } from "./_components/GlobalRealtimeProvider";
+import { LiveRevenueBar } from "./_components/LiveRevenueBar";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -33,7 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   // Buscar o tenant deste dono de barbearia
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('slug, name')
+    .select('id, slug, name')
     .eq('owner_id', user.id)
     .single();
 
@@ -42,6 +44,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="min-h-screen bg-black flex flex-col md:flex-row font-sans text-zinc-300">
+      <GlobalRealtimeProvider tenantId={tenant?.id || ""} />
       {/* Sidebar Lojista - Tech Minimalist */}
       <aside className="hidden md:flex w-64 flex-col bg-black border-r border-[#151515] h-screen sticky top-0 relative z-20">
         
@@ -63,33 +66,33 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           {/* GRUPO PRINCIPAL */}
           <div className="space-y-2">
             <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Visão Geral</h4>
-            <NavItem href="/admin" icon={<Activity size={16} />} label="PAINEL DINÂMICO" />
-            <NavItem href="/admin/config" icon={<Settings size={16} />} label="MINHA BARBEARIA" />
+            <NavItem href="/admin" icon={<Activity size={16} />} label="INSIGHTS & CRESCIMENTO" />
+            <NavItem href="/admin/config" icon={<Settings size={16} />} label="MEU ESPAÇO" />
           </div>
 
           {/* OPERACIONAL */}
           <div className="space-y-2">
             <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Operacional</h4>
-            <NavItem href="/admin/agenda" icon={<Calendar size={16} />} label="AGENDA MESTRE" />
+            <NavItem href="/admin/agenda" icon={<Calendar size={16} />} label="AGENDA INTELIGENTE" />
             <NavItem href="/admin/servicos" icon={<Scissors size={16} />} label="CATÁLOGO DE SERVIÇOS" />
             <NavItem href="/admin/profissionais" icon={<Users size={16} />} label="EQUIPE / BARBEIROS" />
-            <NavItem href="/admin/clientes" icon={<Users size={16} />} label="CLIENTES CRM" />
-            <NavItem href="/admin/configuracoes" icon={<Settings size={16} />} label="CONFIGURAÇÕES" />
-            <NavItem href="/admin/chat" icon={<MessageSquare size={16} />} label="CHAT EM TEMPO REAL" />
+            <NavItem href="/admin/clientes" icon={<Users size={16} />} label="CARTEIRA DE CLIENTES" />
+            <NavItem href="/admin/configuracoes" icon={<Settings size={16} />} label="CONFIGURAÇÕES GERAIS" />
+            <NavItem href="/admin/chat" icon={<MessageSquare size={16} />} label="ATENDIMENTO (CHAT)" />
           </div>
 
           {/* PRESENÇA DIGITAL */}
           <div className="space-y-2">
             <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Presença Digital</h4>
-            <NavItem href="/admin/vitrine" icon={<Monitor size={16} />} label="EDITAR VITRINE" />
+            <NavItem href="/admin/vitrine" icon={<Monitor size={16} />} label="EDITAR VITRINE / LINK" />
             <NavItem href={publicUrl} icon={<Globe size={16} />} label="VER SITE PÚBLICO" target="_blank" />
           </div>
 
           {/* FINANCEIRO */}
           <div className="flex flex-col gap-1 px-4">
             <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Monitoramento</h4>
-            <NavItem href="/admin/financeiro" icon={<Wallet size={16} />} label="FINANCEIRO HUB" />
-            <NavItem href="/admin/vendas" icon={<TrendingUp size={16} />} label="RELATÓRIOS" />
+            <NavItem href="/admin/financeiro" icon={<Wallet size={16} />} label="CAIXA & RECEITA" />
+            <NavItem href="/admin/vendas" icon={<TrendingUp size={16} />} label="ALTA PERFORMANCE" />
           </div>
 
           <div className="mt-10 px-8">
@@ -121,7 +124,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       {/* Main Content */}
       <main className="flex-1 w-full relative bg-[#050505] min-h-screen border-l border-[#111]">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
-        <div className="p-6 md:p-12 relative z-10">
+        
+        {/* Painel Global Top-Right */}
+        <div className="absolute top-6 right-6 md:right-12 z-50">
+           <LiveRevenueBar tenantId={tenant?.id || ""} />
+        </div>
+
+        <div className="p-6 md:p-12 pt-24 relative z-10">
           {children}
         </div>
       </main>
