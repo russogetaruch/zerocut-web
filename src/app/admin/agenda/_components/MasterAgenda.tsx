@@ -16,9 +16,10 @@ import {
   Phone,
   Plus,
   Save,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
-import { format, addDays, subDays, startOfToday, parse, isAfter } from "date-fns";
+import { format, addDays, subDays, startOfToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateAppointmentStatus, createAdminBooking } from "../actions";
@@ -73,7 +74,6 @@ export function MasterAgenda({
              .eq('id', payload.new.id)
              .single();
            if (newApt) setAppointments(prev => [newApt, ...prev]);
-           toast.success("Novo agendamento recebido!", { icon: "📅" });
         } else if (payload.eventType === 'UPDATE') {
            setAppointments(prev => prev.map(a => a.id === payload.new.id ? { ...a, ...payload.new } : a));
         } else if (payload.eventType === 'DELETE') {
@@ -108,9 +108,9 @@ export function MasterAgenda({
     });
   };
 
-  const handleManualBooking = async () => {
+  const handleManualSubmit = async () => {
     if (!manualFormData.clientName || !manualFormData.serviceId) {
-       toast.error("Preencha o nome do cliente e o serviço.");
+       toast.error("Preencha todos os campos.");
        return;
     }
 
@@ -125,7 +125,7 @@ export function MasterAgenda({
       });
 
       if (result.success) {
-         toast.success("Agendamento manual criado!");
+         toast.success("Agendamento criado!");
          setIsManualBookingOpen(false);
          setManualFormData({ professionalId: "", time: "", clientName: "", serviceId: "" });
       } else {
@@ -142,28 +142,38 @@ export function MasterAgenda({
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
   const dailyAppointments = appointments
-    .filter(a => a.appointment_date === dateStr && a.status !== 'CANCELED')
+    .filter(a => {
+      const aptDate = typeof a.appointment_date === 'string' 
+        ? a.appointment_date.split('T')[0] 
+        : format(new Date(a.appointment_date), 'yyyy-MM-dd');
+      return aptDate === dateStr && a.status !== 'CANCELED';
+    })
     .sort((a, b) => a.appointment_time.localeCompare(b.appointment_time));
 
-  const timeSlots = Array.from(new Set([
-    ...standardSlots,
-    ...dailyAppointments.map(a => a.appointment_time.substring(0, 5))
-  ])).sort();
-
-  function getAppointment(profId: string, slotTime: string) {
-    return appointments.find(a => {
+  function getAppointmentsForSlot(profId: string, slotTime: string) {
+    return dailyAppointments.filter(a => {
       if (!a.appointment_time) return false;
-      const aptTime = a.appointment_time.substring(0, 5);
-      return a.professional_id === profId && 
-             aptTime === slotTime &&
-             a.appointment_date === dateStr &&
-             a.status !== 'CANCELED';
+      const aptTime = a.appointment_time.substring(0, 5).trim();
+      const normalizeSlot = slotTime.trim();
+      if (aptTime !== normalizeSlot) return false;
+      
+      const aProfId = a.professional_id ? String(a.professional_id) : null;
+      const targetProfId = String(profId);
+      
+      // Regra de Órfãos: Se nulo, vai para o primeiro barbeiro
+      const isFirstProf = professionals[0] && String(professionals[0].id) === targetProfId;
+      return aProfId === targetProfId || (!aProfId && isFirstProf);
     });
   }
 
+  const openWhatsApp = (phone: string, name: string) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    const msg = encodeURIComponent(`Olá ${name}, aqui é da Barbearia. Tudo bem? Temos um agendamento hoje às...`);
+    window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, '_blank');
+  };
+
   return (
     <div className="space-y-6">
-      
       {/* Seletor de Data e Toggle */}
       <div className="flex flex-col lg:flex-row items-center justify-between bg-[#0a0a0a] p-5 rounded-3xl border border-white/5 shadow-2xl gap-6">
         <div className="flex items-center gap-6">
@@ -193,48 +203,42 @@ export function MasterAgenda({
                     <th className="p-6 w-24 border-r border-white/5"><Clock size={16} className="text-primary mx-auto" /></th>
                     {professionals.map(prof => (
                       <th key={prof.id} className="p-8 text-center min-w-[240px] border-r border-white/5 last:border-0">
-                        <div className="flex flex-col items-center gap-4">
-                           <div className="w-16 h-16 rounded-full border-2 border-primary/20 p-1 ring-4 ring-primary/5 overflow-hidden"><img src={prof.avatar_url || `https://i.pravatar.cc/150?u=${prof.id}`} className="w-full h-full rounded-full object-cover grayscale brightness-50 group-hover:grayscale-0 transition-all" alt={prof.name} /></div>
-                           <div>
-                              <p className="text-white font-black text-sm uppercase tracking-wide italic">{prof.name}</p>
-                              <p className="text-[9px] text-primary/60 font-mono uppercase tracking-[0.2em]">{prof.specialty || 'Elite'}</p>
-                           </div>
-                        </div>
+                         <p className="text-white font-black text-sm uppercase tracking-wide italic">{prof.name}</p>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {timeSlots.map(time => (
+                  {standardSlots.map(time => (
                     <tr key={time} className="border-b border-white/5 group transition-colors">
                       <td className="p-6 text-center border-r border-white/5 bg-white/[0.02]">
                         <span className="text-[12px] font-mono font-black text-zinc-500 group-hover:text-primary transition-colors">{time}</span>
                       </td>
                       {professionals.map(prof => {
-                        const apt = getAppointment(prof.id, time);
+                        const cellApts = getAppointmentsForSlot(prof.id, time);
                         return (
-                          <td key={prof.id} onClick={() => {
-                            if (apt) {
-                              setSelectedAppointment(apt);
-                              setFinalizingStep('details');
-                            } else {
-                              setManualFormData({ ...manualFormData, professionalId: prof.id, time });
-                              setIsManualBookingOpen(true);
-                            }
-                          }} className="p-2 border-r border-white/5 last:border-0 relative h-32 cursor-pointer group/cell">
-                            {apt ? (
-                              <motion.div className={`h-full rounded-3xl p-5 flex flex-col justify-between border shadow-2xl transition-all hover:scale-[1.02] ${apt.status === 'COMPLETED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-primary/10 border-primary/20 text-primary'}`}>
-                                 <div className="flex justify-between items-start">
-                                    <span className="text-xs font-black uppercase tracking-tight truncate">{apt.client_name}</span>
-                                    <Scissors size={12} className="opacity-40" />
-                                 </div>
-                                 <div className="flex items-center justify-between opacity-60">
-                                    <p className="text-[9px] font-mono uppercase tracking-widest">{apt.services?.name || '---'}</p>
-                                    <p className="text-[10px] font-mono font-black">R${apt.services?.price || '0'}</p>
-                                 </div>
-                              </motion.div>
+                          <td key={prof.id} className="p-2 border-r border-white/5 last:border-0 relative h-36 group/cell">
+                            {cellApts.length > 0 ? (
+                              <div className="h-full flex flex-col gap-1 overflow-y-auto pr-1">
+                                {cellApts.map(apt => (
+                                  <motion.div 
+                                    key={apt.id}
+                                    onClick={() => setSelectedAppointment(apt)}
+                                    className="min-h-[70px] flex-shrink-0 rounded-2xl p-4 flex flex-col justify-between border border-primary/20 bg-primary/10 text-primary shadow-xl cursor-pointer hover:scale-[1.02]"
+                                  >
+                                     <div className="flex justify-between items-start">
+                                        <span className="text-[10px] font-black uppercase truncate leading-tight w-full">{apt.client_name}</span>
+                                        <button onClick={(e) => { e.stopPropagation(); openWhatsApp(apt.client_phone || '', apt.client_name); }} className="p-1 hover:bg-emerald-500/20 rounded text-emerald-500"><Phone size={10} /></button>
+                                     </div>
+                                     <span className="text-[8px] font-mono opacity-60 uppercase">{apt.services?.name || 'Vip Experience'}</span>
+                                  </motion.div>
+                                ))}
+                              </div>
                             ) : (
-                              <div className="h-full w-full rounded-3xl border border-dashed border-white/5 group-hover/cell:border-primary/20 group-hover/cell:bg-primary/5 transition-all flex items-center justify-center">
+                              <div 
+                                onClick={() => { setManualFormData({ ...manualFormData, professionalId: prof.id, time }); setIsManualBookingOpen(true); }}
+                                className="h-full w-full rounded-3xl border border-dashed border-white/5 group-hover/cell:border-primary/20 group-hover/cell:bg-primary/5 transition-all flex items-center justify-center cursor-pointer"
+                              >
                                  <Plus size={20} className="text-zinc-900 group-hover/cell:text-primary/40 transition-all" />
                               </div>
                             )}
@@ -248,147 +252,135 @@ export function MasterAgenda({
             </div>
           </motion.div>
         ) : (
-          <motion.div key="list" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
              {dailyAppointments.length > 0 ? dailyAppointments.map((apt) => (
-                <div key={apt.id} onClick={() => setSelectedAppointment(apt)} className="bg-zinc-950 border border-white/5 p-6 rounded-3xl flex items-center gap-8 hover:border-primary/40 hover:bg-zinc-900/50 transition-all cursor-pointer group">
-                   <div className="min-w-[80px] text-center border-r border-white/5 pr-8">
-                      <span className="text-2xl font-black text-primary font-mono">{apt.appointment_time.substring(0, 5)}</span>
-                   </div>
-                   <div className="flex-1">
-                      <h4 className="text-white font-black text-lg uppercase tracking-tight mb-1 italic">{apt.client_name}</h4>
-                      <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                         <span className="flex items-center gap-2"><Scissors size={12} className="text-primary"/> {apt.services?.name}</span>
-                         <span className={`px-2 py-0.5 rounded ${apt.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'}`}>{apt.status}</span>
+                <div key={apt.id} onClick={() => setSelectedAppointment(apt)} className="bg-zinc-900/40 border border-white/5 p-6 rounded-[32px] flex items-center justify-between hover:bg-white/[0.03] transition-all cursor-pointer group">
+                   <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-primary font-black italic border border-white/5 shadow-inner">{apt.appointment_time.substring(0, 5)}</div>
+                      <div>
+                        <h4 className="text-white font-black uppercase italic tracking-tighter text-xl">{apt.client_name}</h4>
+                        <div className="flex items-center gap-3 mt-1">
+                           <span className="text-[10px] font-mono text-primary flex items-center gap-1"><Scissors size={10} /> {apt.services?.name}</span>
+                        </div>
                       </div>
                    </div>
-                   <ChevronRight className="text-zinc-800 group-hover:text-primary transition-all" />
+                   <ChevronRight size={20} className="text-zinc-700 group-hover:text-primary transition-all" />
                 </div>
              )) : (
-               <div className="py-32 text-center bg-zinc-950/50 border border-dashed border-white/5 rounded-[40px]">
-                  <Clock size={48} className="text-zinc-900 mx-auto mb-6" />
-                  <p className="text-zinc-600 font-mono text-xs uppercase tracking-[0.3em]">Agenda Limpa para este dia.</p>
+               <div className="py-32 text-center bg-black/40 rounded-[40px] border border-white/5 border-dashed">
+                  <CalendarIcon size={48} className="mx-auto text-zinc-800 mb-6" />
+                  <p className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Nenhum agendamento para este dia</p>
                </div>
              )}
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* MODAL: CHECKOUT / DETALHES */}
       <AnimatePresence>
-        {/* Modal de Detalhes / Checkout */}
-        {selectedAppointment && (
-          <div className="fixed inset-0 z-50 flex items-center justify-end p-4 md:p-10">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedAppointment(null)} className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="relative w-full max-w-lg h-full bg-zinc-950 border-l border-white/5 rounded-[40px] shadow-2xl p-10 flex flex-col overflow-y-auto">
-               <div className="flex justify-between items-center mb-12">
-                  <h3 className="text-3xl font-serif font-black text-white italic uppercase tracking-tight">Comanda <span className="text-primary">#{selectedAppointment.id.substring(0,4)}</span></h3>
-                  <button onClick={() => setSelectedAppointment(null)} className="p-3 bg-white/5 rounded-full hover:bg-white/10 text-zinc-400 transition-all"><X size={24} /></button>
+        {selectedAppointment && !isCheckoutOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-end p-4 md:p-10 pointer-events-none">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedAppointment(null)} className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="relative w-full max-w-lg h-full bg-black border-l border-white/10 rounded-[40px] shadow-2xl p-10 flex flex-col pointer-events-auto overflow-y-auto">
+               <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-2xl font-serif font-black text-white italic uppercase tracking-tight">Comanda <span className="text-primary tracking-widest">#{selectedAppointment.id.substring(0,4)}</span></h3>
+                  <button onClick={() => setSelectedAppointment(null)} className="p-3 bg-white/5 rounded-full hover:bg-white/10 text-zinc-400 transition-all"><X size={20} /></button>
                </div>
                
-               <div className="flex-1 space-y-10">
-                  <section className="space-y-4">
-                     <p className="text-[10px] font-mono text-primary font-black uppercase tracking-[0.4em]">Proprietário do Horário</p>
-                     <div className="bg-white/5 p-8 rounded-[30px] border border-white/5">
-                        <p className="text-3xl font-black text-white uppercase italic">{selectedAppointment.client_name}</p>
-                        <p className="text-zinc-500 font-mono text-xs mt-2">{selectedAppointment.client_phone || 'SEM_CONTATO_REGISTRADO'}</p>
-                     </div>
-                  </section>
+               <div className="space-y-8">
+                  <div className="bg-zinc-950 p-8 rounded-[40px] border border-white/5">
+                     <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[0.3em] mb-2">Cliente</p>
+                     <p className="text-3xl font-black text-white uppercase italic">{selectedAppointment.client_name}</p>
+                     <p className="text-primary font-mono text-xs mt-3 flex items-center gap-2" onClick={() => openWhatsApp(selectedAppointment.client_phone || '', selectedAppointment.client_name)}><Phone size={14} /> {selectedAppointment.client_phone || 'S/ CONTATO'}</p>
+                  </div>
 
-                  <section className="grid grid-cols-2 gap-6">
-                     <div className="bg-white/5 p-6 rounded-3xl border border-white/5 hover:border-primary/20 transition-all">
-                        <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Início</p>
-                        <p className="text-xl font-mono font-black text-white">{selectedAppointment.appointment_time.substring(0, 5)}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="bg-zinc-950 p-6 rounded-3xl border border-white/5">
+                        <p className="text-[9px] text-zinc-500 font-mono uppercase mb-2">Horário</p>
+                        <p className="text-xl font-black text-white">{selectedAppointment.appointment_time.substring(0, 5)}</p>
                      </div>
-                     <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
-                        <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Estado Atual</p>
-                        <p className={`text-xs font-mono font-black uppercase ${selectedAppointment.status === 'COMPLETED' ? 'text-emerald-500' : 'text-primary'}`}>{selectedAppointment.status}</p>
+                     <div className="bg-zinc-950 p-6 rounded-3xl border border-white/5 text-right">
+                        <p className="text-[9px] text-zinc-500 font-mono uppercase mb-2">Valor</p>
+                        <p className="text-xl font-black text-primary italic">R${selectedAppointment.services?.price || '0'}</p>
                      </div>
-                  </section>
+                  </div>
 
-                  <section className="bg-white/5 p-6 rounded-[30px] border border-white/5 space-y-4">
-                     <div className="flex items-center gap-4">
-                        <Scissors className="text-primary" size={20} />
-                        <div>
-                           <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1">Serviço Pretendido</p>
-                           <p className="text-lg font-black text-white uppercase italic">{selectedAppointment.services?.name || 'Vazio'}</p>
-                        </div>
+                  <div className="bg-zinc-950 p-6 rounded-3xl border border-white/5">
+                     <p className="text-[9px] text-zinc-500 font-mono uppercase mb-3">Serviço & Barbeiro</p>
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-zinc-300 uppercase">{selectedAppointment.services?.name}</span>
+                        <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">{professionals.find(p => p.id === selectedAppointment.professional_id)?.name || 'NÃO ATRIBUÍDO'}</span>
                      </div>
-                     <div className="flex items-center gap-4 pt-4 border-t border-white/5">
-                        <User className="text-primary" size={20} />
-                        <div>
-                           <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest leading-none mb-1">Executor Designado</p>
-                           <p className="text-lg font-black text-zinc-300 uppercase italic">{professionals.find(p => p.id === selectedAppointment.professional_id)?.name}</p>
-                        </div>
-                     </div>
-                  </section>
+                  </div>
                </div>
 
-               <div className="pt-10 space-y-4 mt-auto">
+               <div className="mt-auto pt-10 space-y-4">
                   {selectedAppointment.status !== 'COMPLETED' && (
-                     <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-primary text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-[0_20px_50px_rgba(212,175,55,0.2)] uppercase tracking-widest text-sm">
-                        <CheckCircle size={20} /> Fechar & Receber R${selectedAppointment.services?.price || '0'}
+                     <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-primary text-black font-black py-6 rounded-3xl flex items-center justify-center gap-3 hover:bg-white transition-all uppercase tracking-widest">
+                        <CheckCircle size={20} /> Fechar & Receber
                      </button>
                   )}
-                  {selectedAppointment.status === 'SCHEDULED' && (
-                     <button onClick={() => updateAppointmentStatus(selectedAppointment.id, 'CANCELED')} className="w-full bg-zinc-900 text-rose-500 font-bold py-5 rounded-2xl border border-rose-500/10 hover:bg-rose-500/10 transition-all uppercase tracking-widest text-xs">
-                        Anular Comanda
-                     </button>
-                  )}
+                  <button onClick={() => updateAppointmentStatus(selectedAppointment.id, 'CANCELED')} className="w-full bg-zinc-900/50 text-rose-500/50 font-bold py-5 rounded-3xl border border-white/5 hover:text-rose-500 transition-all uppercase tracking-widest text-[10px]">
+                     Cancelar Agendamento
+                  </button>
                </div>
             </motion.div>
           </div>
         )}
-
-        {/* Modal de Agendamento Manual (Walk-in) */}
-        {isManualBookingOpen && (
-           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsManualBookingOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-lg" />
-             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative w-full max-w-md bg-zinc-950 border border-white/10 rounded-[40px] shadow-2xl p-10 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
-                <h3 className="text-2xl font-serif font-black text-white italic mb-10 uppercase tracking-tight">Agendamento <span className="text-primary">Na Hora</span></h3>
-                
-                <div className="space-y-6">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Nome do Cliente</label>
-                      <input 
-                        type="text" 
-                        placeholder="Ex: João da Silva" 
-                        value={manualFormData.clientName}
-                        onChange={(e) => setManualFormData({...manualFormData, clientName: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary transition-all font-medium"
-                      />
-                   </div>
-
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Serviço</label>
-                      <select 
-                        value={manualFormData.serviceId}
-                        onChange={(e) => setManualFormData({...manualFormData, serviceId: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-primary appearance-none transition-all font-medium"
-                      >
-                         <option value="" className="bg-black">Selecione o Serviço</option>
-                         {services.map(s => <option key={s.id} value={s.id} className="bg-black">{s.name} - R${s.price}</option>)}
-                      </select>
-                   </div>
-
-                   <div className="p-6 bg-primary/5 border border-primary/20 rounded-3xl flex flex-col gap-2">
-                      <p className="text-[9px] font-mono text-primary uppercase tracking-widest">Resumo do Encaixe</p>
-                      <p className="text-white font-black text-lg italic uppercase">{timeSlots.includes(manualFormData.time) ? manualFormData.time : 'Selecionando...'}</p>
-                      <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-[0.2em]">{professionals.find(p => p.id === manualFormData.professionalId)?.name}</p>
-                   </div>
-
-                   <button 
-                     disabled={isPending}
-                     onClick={handleManualBooking}
-                     className="w-full bg-primary text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl disabled:opacity-50 uppercase tracking-widest text-xs"
-                   >
-                     {isPending ? <Loader2 className="animate-spin" /> : <Save size={18} />} SALVAR AGENDAMENTO
-                   </button>
-                   <button onClick={() => setIsManualBookingOpen(false)} className="w-full text-zinc-600 font-mono text-[10px] uppercase tracking-widest py-2">Cancelar</button>
-                </div>
-             </motion.div>
-           </div>
-        )}
       </AnimatePresence>
+
+      {/* MODAL: AGENDAMENTO MANUAL (ENCAIXE) - COMPACTO */}
+      {isManualBookingOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsManualBookingOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-lg" />
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative w-full max-w-md bg-zinc-950 border border-white/10 rounded-[40px] shadow-2xl p-10 overflow-hidden">
+             <div className="flex justify-between items-center mb-10">
+                <h3 className="text-2xl font-serif font-black text-white italic uppercase tracking-tighter">Encaixe <span className="text-primary italic underline decoration-primary/20 underline-offset-8">Rápido</span></h3>
+                <button onClick={() => setIsManualBookingOpen(false)} className="text-zinc-600 hover:text-white"><X size={24} /></button>
+             </div>
+             
+             <div className="space-y-6">
+                {/* Alerta de Conflito */}
+                {getAppointmentsForSlot(manualFormData.professionalId, manualFormData.time).length > 0 && (
+                   <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-3xl flex items-start gap-3">
+                      <AlertCircle className="text-red-500 shrink-0" size={16} />
+                      <p className="text-[10px] text-red-500/80 font-bold uppercase leading-relaxed">
+                        Horário ocupado para <span className="text-red-500">{professionals.find(p => p.id === manualFormData.professionalId)?.name}</span>.
+                      </p>
+                   </div>
+                )}
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-2 italic">Cliente</label>
+                   <input type="text" autoFocus placeholder="Nome do Cliente" value={manualFormData.clientName} onChange={(e) => setManualFormData({...manualFormData, clientName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-white outline-none focus:border-primary transition-all text-sm" />
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-2 italic">Serviço</label>
+                   <select value={manualFormData.serviceId} onChange={(e) => setManualFormData({...manualFormData, serviceId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-white outline-none focus:border-primary appearance-none transition-all text-sm">
+                      <option value="" className="bg-black">Escolha o serviço</option>
+                      {services.map(s => <option key={s.id} value={s.id} className="bg-black">{s.name} (R${s.price})</option>)}
+                   </select>
+                </div>
+
+                {getAppointmentsForSlot(manualFormData.professionalId, manualFormData.time).length > 0 && (
+                   <div className="space-y-3">
+                      <p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest text-center italic">Alternativas Livres agora:</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                         {professionals.filter(p => getAppointmentsForSlot(p.id, manualFormData.time).length === 0).map(p => (
+                            <button key={p.id} onClick={() => setManualFormData({...manualFormData, professionalId: p.id})} className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-2xl text-[9px] font-black text-primary uppercase hover:bg-primary hover:text-black transition-all">Atribuir a {p.name.split(' ')[0]}</button>
+                         ))}
+                      </div>
+                   </div>
+                )}
+
+                <button disabled={isPending || !manualFormData.clientName || !manualFormData.serviceId} onClick={handleManualSubmit} className="w-full bg-primary text-black font-black py-6 rounded-3xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl disabled:opacity-50 uppercase tracking-widest text-sm mt-4">
+                  {isPending ? <Loader2 className="animate-spin" /> : <Save size={18} />} CONCLUIR ENCAIXE
+                </button>
+             </div>
+          </motion.div>
+        </div>
+      )}
 
       <CheckoutModal 
         isOpen={isCheckoutOpen} 
