@@ -3,21 +3,14 @@ import {
   Star, 
   Clock, 
   MapPin, 
-  X, 
-  ChevronRight, 
-  User, 
-  CalendarDays,
   ShieldCheck,
-  Zap,
-  Award,
-  Smartphone,
-  CheckCircle2
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import BookingClientFlow from "./_components/BookingClientFlow";
 import ChatWidget from "./_components/ChatWidget";
-import { AnimatedLogo, AnimatedBarberCard } from "./_components/MotionWrappers";
+import TenantLogo from "./_components/TenantLogo";
+
 
 export default async function TenantPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;

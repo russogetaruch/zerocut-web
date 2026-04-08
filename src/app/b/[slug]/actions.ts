@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function createBooking(tenantId: string, bookingData: { serviceId: string, serviceName: string, professionalId: string, time: string, clientName: string, clientPhone: string }) {
+export async function createBooking(tenantId: string, bookingData: { serviceId: string, serviceName: string, professionalId: string, date: string, time: string, clientName: string, clientPhone: string }) {
   const supabase = await createClient();
 
   // Insira o agendamento no Supabase vinculado ao profissional
@@ -13,7 +13,7 @@ export async function createBooking(tenantId: string, bookingData: { serviceId: 
       professional_id: bookingData.professionalId,
       client_name: bookingData.clientName,
       client_phone: bookingData.clientPhone, 
-      appointment_date: new Date().toISOString().split('T')[0], 
+      appointment_date: bookingData.date,
       appointment_time: `${bookingData.time}:00`,
       status: "INCOMING",
     }
