@@ -1,13 +1,13 @@
-export default async function TenantLayout({ children, params }: { children: React.ReactNode, params: Promise<{ slug: string }> }) {
+import { ReactNode } from "react";
+
+export default async function TenantLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="font-serif font-bold text-xl text-primary">Barbearia VIP</div>
-          <button className="text-sm font-medium hover:text-primary transition-colors">Entrar</button>
-        </div>
-      </header>
-      <main className="pt-16 max-w-4xl mx-auto min-h-screen">
+    <div className="min-h-screen bg-[#050505] selection:bg-primary selection:text-black antialiased">
+      {/* 
+          O Layout aqui deve ser mínimo para não quebrar a imersão das vitrines. 
+          Deixamos o controle total de design para a Page.
+      */}
+      <main className="w-full min-h-screen">
         {children}
       </main>
     </div>

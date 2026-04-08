@@ -39,122 +39,118 @@ export default async function TenantPublicPage({ params }: { params: Promise<{ s
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-zinc-300 selection:bg-primary selection:text-black">
       
-       {/* 1. HERO SECTION - IMMERSIVE OVERLAY */}
-      <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Banner with Deep Parallax Look */}
+        {/* 1. HERO SECTION - NEO-LUXURY IMMERSIVE */}
+      <section className="relative w-full h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-black">
+        {/* Cinematic Background */}
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40 grayscale hover:grayscale-0 transition-all duration-1000 scale-110"
+          className="absolute inset-0 bg-cover bg-center opacity-30 scale-110 grayscale"
           style={{ backgroundImage: `url(${tenant.banner_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80'})` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black"></div>
-        <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black to-transparent"></div>
-        
-        {/* Glowing Accents */}
-        <div className="absolute top-[30%] left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-primary/5 blur-[180px] rounded-full"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-60"></div>
 
-        <div className="relative z-10 text-center px-6 max-w-6xl w-full flex flex-col items-center">
+        {/* Floating Glass Header (Address + Info) */}
+        <div className="absolute top-10 inset-x-0 z-50 px-6">
+           <div className="max-w-6xl mx-auto flex justify-between items-center bg-white/[0.03] backdrop-blur-2xl border border-white/5 px-8 py-4 rounded-[2rem] shadow-2xl">
+              <div className="flex items-center gap-6">
+                 <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-primary" />
+                    <span className="text-[9px] font-mono text-white uppercase tracking-widest">{tenant.address || 'Localização Prime'}</span>
+                 </div>
+                 <div className="h-4 w-px bg-white/10 hidden md:block"></div>
+                 <div className="hidden md:flex items-center gap-2">
+                    <Clock size={14} className="text-primary" />
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Seg - Sab / 09h - 19h</span>
+                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                 <ShieldCheck size={16} className="text-primary" />
+                 <span className="text-[10px] font-mono text-white font-black uppercase tracking-[0.3em]">AUTHENTIC_CERTIFIED_ZERØ</span>
+              </div>
+           </div>
+        </div>
+
+        <div className="relative z-10 text-center flex flex-col items-center max-w-7xl animate-in fade-in zoom-in duration-1000">
           
-          {/* Logo - Ajuste 1: Circular Elite Frame */}
-          <div className="relative mb-12 group cursor-default">
-             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-             <div className="w-32 h-32 md:w-44 md:h-44 p-1 rounded-full bg-gradient-to-tr from-primary/40 via-white/10 to-transparent relative z-10 shadow-2xl">
-                <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/5 shadow-inner">
-                   <img src={tenant.logo_url || '/logo.png'} className="w-[85%] h-[85%] object-contain scale-110 group-hover:scale-125 transition-transform duration-1000" alt={tenant.name} />
+          {/* Logo Circular Elite */}
+          <div className="mb-12 relative">
+             <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full scale-125 animate-pulse"></div>
+             <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border border-primary/40 p-1 relative z-10 bg-black/50 overflow-hidden shadow-2xl">
+                <div className="w-full h-full rounded-full flex items-center justify-center bg-black">
+                   <img src={tenant.logo_url || '/logo.png'} className="w-3/4 h-3/4 object-contain" alt={tenant.name} />
                 </div>
              </div>
           </div>
 
-          <div className="space-y-4 mb-10">
-             <div className="flex items-center justify-center gap-4 mb-2">
-                <span className="h-px w-12 bg-gradient-to-r from-transparent to-primary/50"></span>
-                <span className="text-primary font-mono text-[9px] tracking-[0.5em] uppercase font-black">EST. 2026</span>
-                <span className="h-px w-12 bg-gradient-to-l from-transparent to-primary/50"></span>
-             </div>
-             
-             <h1 className="text-7xl md:text-[10rem] font-serif font-black text-white tracking-tighter leading-[0.85] uppercase italic drop-shadow-2xl">
-               {tenant.name}
+          {/* Typography Overdose */}
+          <div className="space-y-2 mb-12">
+             <p className="text-primary font-mono text-[10px] tracking-[0.6em] uppercase font-black opacity-80 mb-4 animate-in slide-in-from-top-4 duration-1200">/REDEFININDO_O_ESTILO_MASCULINO</p>
+             <h1 className="text-6xl md:text-[11rem] font-serif font-black text-white italic tracking-tighter leading-none uppercase drop-shadow-[0_20px_50px_rgba(0,0,0,1)]">
+                {tenant.name}
              </h1>
-             
-             <div className="inline-flex items-center gap-4 bg-primary/5 backdrop-blur-sm border border-primary/20 px-8 py-3 rounded-2xl">
-                <p className="text-primary font-mono text-[10px] tracking-[0.4em] uppercase font-black">
-                   {tenant.tagline || 'REDEFININDO O CONCEITO DE ESTILO'}
-                </p>
-             </div>
+             <h2 className="text-zinc-500 font-serif text-lg md:text-3xl italic tracking-tight font-medium opacity-60">
+                {tenant.tagline || 'Excelência em cada detalhe.'}
+             </h2>
           </div>
 
-          <div className="flex flex-col items-center gap-8 max-w-xl">
-             <div className="flex items-center gap-3 text-zinc-500 hover:text-white transition-colors cursor-default">
-                <MapPin size={16} className="text-primary" />
-                <p className="text-xs font-medium uppercase tracking-[0.2em]">{tenant.address || 'Localização Prime'}</p>
-             </div>
-
-             <div className="w-full scale-110 md:scale-125">
+          {/* Refined CTA Container */}
+          <div className="flex flex-col items-center gap-10">
+             <div className="scale-110">
                 <BookingClientFlow 
                    tenantId={tenant.id} 
                    services={catalog || []} 
                    professionals={staff || []}
                 />
              </div>
+
+             <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 pt-16 border-t border-white/5 w-full max-w-4xl px-6">
+                <MiniStat value="08+" label="SERVIÇOS_ELITE" />
+                <MiniStat value="5.0" label="SATISFAÇÃO_VIP" />
+                <MiniStat value="15+" label="ANOS_PRÁTICA" />
+                <MiniStat value="FREE" label="WIFI_&_CAFÉ" />
+             </div>
           </div>
-
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-12 flex flex-col items-center gap-4 group cursor-pointer opacity-40 hover:opacity-100 transition-opacity">
-           <span className="text-[9px] font-mono text-white uppercase tracking-[0.6em] animate-pulse">Explore_Excellence</span>
-           <div className="w-px h-16 bg-gradient-to-b from-primary via-primary/20 to-transparent"></div>
+        {/* Aesthetic Scroll Trigger */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+           <span className="text-[8px] font-mono text-zinc-700 uppercase tracking-[0.5em]">Scroll_Down</span>
+           <div className="w-px h-16 bg-gradient-to-b from-primary/30 to-transparent"></div>
         </div>
       </section>
 
-      {/* 2. STATS & VIBE CROSSHATCH */}
-      <section className="bg-black py-20 relative border-y border-white/5">
-         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <StatItem icon={<Zap size={20}/>} value="FAST" title="RESERVA RÁPIDA" />
-            <StatItem icon={<Award size={20}/>} value="PREMIUM" title="ESTILO DE ELITE" />
-            <StatItem icon={<Smartphone size={20}/>} value="SMART" title="GESTÃO DIGITAL" />
-            <StatItem icon={<MapPin size={20}/>} value="PRIME" title="LOCALIZAÇÃO" />
-         </div>
-      </section>
+      {/* 2. MENU DE SERVIÇOS (REIMAGINADO) */}
+      <section className="bg-[#030303] py-40 border-y border-white/5 relative">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/[0.02] filter blur-[150px] rounded-full"></div>
+        
+        <div className="max-w-6xl mx-auto px-6 space-y-32">
+           <div className="flex flex-col lg:flex-row justify-between items-end gap-10">
+              <div className="space-y-6">
+                 <h3 className="text-primary font-mono text-[10px] tracking-[0.5em] uppercase font-black">/PORTFÓLIO_DE_ESTILO</h3>
+                 <h2 className="text-5xl md:text-7xl font-serif font-black text-white italic uppercase tracking-tighter leading-none">Serviços_Curados</h2>
+              </div>
+              <p className="max-w-xs text-zinc-500 font-mono text-[10px] uppercase leading-relaxed tracking-widest text-right">
+                 Trabalhamos apenas com as melhores técnicas mundiais de visagismo e acabamento.
+              </p>
+           </div>
 
-      {/* 3. MENU DE SERVIÇOS (CATÁLOGO DE LUXO) */}
-      <section className="max-w-6xl mx-auto px-6 py-32 space-y-20 relative">
-        <div className="flex flex-col items-center text-center space-y-4">
-           <h3 className="text-primary font-mono text-[10px] tracking-[0.5em] uppercase font-black">/MENU_DE_ESTILO</h3>
-           <h2 className="text-4xl md:text-6xl font-serif font-black text-white italic uppercase tracking-tighter">Nossos Portfólios_</h2>
-           <div className="w-24 h-1 bg-primary/30 rounded-full"></div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-           {catalog && catalog.length > 0 ? (
-             catalog.map((srv) => (
-                <div key={srv.id} className="group bg-[#080808] border border-white/5 p-10 rounded-[2.5rem] hover:border-primary/40 transition-all relative overflow-hidden shadow-2xl">
-                   <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Scissors size={64} className="text-primary" />
-                   </div>
-                   
-                   <div className="flex justify-between items-start mb-8">
-                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                         <Zap size={20} />
-                      </div>
-                      <span className="text-primary font-serif font-black text-2xl group-hover:translate-x-2 transition-transform">R$ {srv.price}</span>
-                   </div>
-
-                   <div className="flex items-center gap-2 mb-2">
-                     <span className="text-primary font-mono text-[8px] bg-primary/5 border border-primary/10 px-2 py-0.5 rounded tracking-[0.4em] uppercase font-black uppercase tracking-widest">{srv.category || "Cabelo"}</span>
-                   </div>
-                   <h4 className="text-xl font-serif font-bold text-white mb-4 uppercase italic group-hover:text-primary transition-colors tracking-tight">{srv.name}</h4>
-                   <p className="text-zinc-500 text-sm mb-8 leading-relaxed font-medium line-clamp-3 h-20">{srv.description || "Técnica apurada de corte e acabamento, respeitando o seu perfil."}</p>
-                   
-                   <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest pt-6 border-t border-white/5">
-                      <Clock size={12} className="text-primary" /> {srv.duration_minutes} MINUTOS_
-                      <CheckCircle2 size={12} className="text-primary ml-auto" /> ÉLITE SERVICE
-                   </div>
-                </div>
-             ))
-           ) : (
-             <p className="col-span-full text-center text-zinc-600 font-mono text-xs uppercase italic py-20">Nossos serviços estão em atualização.</p>
-           )}
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {catalog?.map((srv) => (
+                 <div key={srv.id} className="group relative space-y-6 flex flex-col">
+                    <div className="flex justify-between items-start border-b border-white/5 pb-4 group-hover:border-primary/40 transition-colors">
+                       <div>
+                          <p className="text-primary font-mono text-[8px] tracking-widest uppercase mb-1">{srv.category || "Master"}</p>
+                          <h4 className="text-2xl font-serif font-black text-white uppercase italic group-hover:text-primary transition-colors">{srv.name}</h4>
+                       </div>
+                       <span className="text-xl font-serif font-black text-white group-hover:translate-x-2 transition-transform italic">R${srv.price}</span>
+                    </div>
+                    <p className="text-zinc-600 text-[11px] leading-relaxed line-clamp-2 h-8">{srv.description || "Técnica apurada de corte e acabamento premium."}</p>
+                    <div className="flex items-center gap-4 text-[9px] font-mono text-zinc-700 uppercase tracking-widest">
+                       <Clock size={12} className="text-primary/40" /> {srv.duration_minutes} MINUTOS_
+                    </div>
+                 </div>
+              ))}
+           </div>
         </div>
       </section>
 
@@ -261,6 +257,15 @@ export default async function TenantPublicPage({ params }: { params: Promise<{ s
 
     </div>
   );
+}
+
+function MiniStat({ value, label }: { value: string, label: string }) {
+   return (
+      <div className="flex flex-col items-center gap-1 group">
+         <span className="text-xl font-serif font-black text-white italic tracking-tighter group-hover:text-primary transition-colors">{value}</span>
+         <span className="text-[7px] font-mono text-zinc-600 uppercase tracking-widest leading-none">{label}</span>
+      </div>
+   );
 }
 
 function StatItem({ icon, value, title }: any) {
