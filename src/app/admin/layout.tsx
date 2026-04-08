@@ -16,7 +16,8 @@ import {
   Database,
   DollarSign,
   Monitor,
-  Globe
+  Globe,
+  Newspaper
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -96,6 +97,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="space-y-2">
             <h4 className="px-4 text-[9px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 font-black">/PRESENÇA_SITE</h4>
             <NavItem href="/admin/vitrine" icon={<Monitor size={14} />} label="EDITAR_VITRINE" />
+            <NavItem href="/admin/blog" icon={<Newspaper size={14} />} label="BLOG_EDITORIAL" />
             <NavItem href="/admin/configuracoes" icon={<Settings size={14} />} label="CONFIGURAÇÕES" />
           </div>
 

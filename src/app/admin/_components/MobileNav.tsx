@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, Calendar, Scissors, Users, Wallet, TrendingUp, Monitor, Settings, MessageSquare } from "lucide-react";
+import { Menu, X, LayoutDashboard, Calendar, Scissors, Users, Wallet, TrendingUp, Monitor, Settings, MessageSquare, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,6 +49,10 @@ export function MobileNav({ tenant, publicUrl }: { tenant: any, publicUrl: strin
                   <div className="space-y-4">
                      <p className="text-[8px] font-mono text-zinc-700 uppercase tracking-widest border-b border-white/5 pb-2">Financeiro</p>
                      <MobileItem href="/admin/financeiro" icon={<Wallet size={18}/>} label="REVENUE_CAIXA" onClick={() => setIsOpen(false)} />
+                  </div>
+                  <div className="space-y-4">
+                     <p className="text-[8px] font-mono text-zinc-700 uppercase tracking-widest border-b border-white/5 pb-2">Conteúdo</p>
+                     <MobileItem href="/admin/blog" icon={<Newspaper size={18}/>} label="BLOG_EDITORIAL" onClick={() => setIsOpen(false)} />
                   </div>
                </div>
 

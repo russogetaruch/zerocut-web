@@ -296,7 +296,7 @@ export default function Home() {
            <div className="flex gap-10 text-[9px] font-mono font-black text-zinc-600 uppercase tracking-widest">
               <span>Termos de Uso</span>
               <span>Privacidade</span>
-              <span>Blog</span>
+              <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
               <span>Documentação</span>
            </div>
 

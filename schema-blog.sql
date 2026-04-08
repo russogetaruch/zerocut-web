@@ -13,5 +13,10 @@ CREATE TABLE IF NOT EXISTS posts (
 
 -- Habilitar RLS
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+
+-- Recriar policies de forma segura (idempotente)
+DROP POLICY IF EXISTS "Leitura pública para posts" ON posts;
+DROP POLICY IF EXISTS "Admin gerencia posts" ON posts;
+
 CREATE POLICY "Leitura pública para posts" ON posts FOR SELECT USING (true);
 CREATE POLICY "Admin gerencia posts" ON posts FOR ALL USING (true);
