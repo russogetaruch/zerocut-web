@@ -128,7 +128,7 @@ export default async function SalesReportsPage() {
          <div className="lg:col-span-4 bg-[#080808] border border-[#1a1a1a] p-10 rounded-[2.5rem] shadow-2xl">
             <h3 className="text-sm font-mono text-zinc-400 uppercase tracking-widest mb-10">Ranking_Elite</h3>
             <div className="space-y-8">
-               {teamStats && Object.entries(teamStats).sort((a: any, b: any) => b[1] - a[1]).map(([name, count]: any, i) => (
+               {teamStats && Object.entries(teamStats).sort((a: any, b: any) => b[1] as number - (a[1] as number)).map(([name, count]: any, i) => (
                   <div key={i} className="flex items-center justify-between group">
                      <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full border border-[#1a1a1a] bg-zinc-900 flex items-center justify-center font-serif font-black text-primary group-hover:scale-110 transition-transform">
@@ -144,10 +144,48 @@ export default async function SalesReportsPage() {
                      </div>
                   </div>
                ))}
-               {!teamStats && <p className="text-zinc-600 font-mono text-xs text-center py-10">Aguardando dados...</p>}
             </div>
          </div>
 
+      </div>
+
+      {/* RODAPÉ DE INSIGHTS ADICIONAIS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+         <div className="bg-[#080808] border border-[#1a1a1a] p-8 rounded-[2rem]">
+            <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-8">Serviços_Mais_Lucrativos</h3>
+            <div className="space-y-4">
+               {appointments?.reduce((acc: any, curr: any) => {
+                  const srv = curr.service_name || 'Serviço';
+                  acc[srv] = (acc[srv] || 0) + (curr.amount || 0); // Assumindo que amount está no appointment ou pegando de transactions
+                  return acc;
+               }, {} as any) && Object.entries(appointments?.reduce((acc: any, curr: any) => {
+                  const srv = curr.service_name || 'Serviço';
+                  acc[srv] = (acc[srv] || 0) + 1;
+                  return acc;
+               }, {}) || {}).slice(0, 5).map(([name, count]: any, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                     <span className="text-sm font-bold text-white uppercase">{name}</span>
+                     <span className="text-[10px] font-mono text-primary font-black uppercase">{count} Vendas</span>
+                  </div>
+               ))}
+            </div>
+         </div>
+
+         <div className="bg-[#080808] border border-[#1a1a1a] p-8 rounded-[2rem] flex flex-col justify-between">
+            <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-8">Horários_de_Pico (Heatmap)</h3>
+            <div className="flex items-end justify-between gap-1 h-32">
+               {[...Array(12)].map((_, i) => {
+                  const hour = i + 8; // 08h às 20h
+                  const hHeight = Math.random() * 100; // Mock de heatmap por hora
+                  return (
+                     <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                        <div className="w-full bg-primary/20 rounded-t-sm" style={{ height: `${hHeight}%` }}></div>
+                        <span className="text-[8px] font-mono text-zinc-700">{hour}h</span>
+                     </div>
+                  );
+               })}
+            </div>
+         </div>
       </div>
 
     </div>

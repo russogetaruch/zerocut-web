@@ -4,7 +4,7 @@ import { Calendar, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAgendaPage() {
+export default async function AdminAgendaPage({ searchParams }: { searchParams: { action?: string } }) {
   const supabase = await createClient();
 
   // Buscar o tenant ativo
@@ -55,6 +55,7 @@ export default async function AdminAgendaPage() {
         professionals={professionals || []} 
         initialAppointments={appointments || []} 
         services={services || []}
+        intentAction={searchParams.action}
       />
       
     </div>

@@ -12,17 +12,35 @@ export default function ServiceManagement({ initialServices, tenantId }: { initi
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
-  const [formData, setFormData] = useState({ name: "", price: "", duration: "45" });
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    price: "", 
+    duration: "45",
+    category: "Cabelo",
+    description: "" 
+  });
 
   function openNew() {
     setEditingService(null);
-    setFormData({ name: "", price: "", duration: "45" });
+    setFormData({ 
+      name: "", 
+      price: "", 
+      duration: "45",
+      category: "Cabelo",
+      description: "" 
+    });
     setIsDrawerOpen(true);
   }
 
   function openEdit(srv: any) {
     setEditingService(srv);
-    setFormData({ name: srv.name, price: srv.price.toString(), duration: srv.duration_minutes.toString() });
+    setFormData({ 
+      name: srv.name, 
+      price: srv.price.toString(), 
+      duration: srv.duration_minutes.toString(),
+      category: srv.category || "Cabelo",
+      description: srv.description || ""
+    });
     setIsDrawerOpen(true);
   }
 
@@ -34,7 +52,9 @@ export default function ServiceManagement({ initialServices, tenantId }: { initi
       id: editingService?.id,
       name: formData.name,
       price: parseFloat(formData.price),
-      duration: parseInt(formData.duration)
+      duration: parseInt(formData.duration),
+      category: formData.category,
+      description: formData.description
     });
 
     setIsSubmitting(false);
@@ -96,7 +116,13 @@ export default function ServiceManagement({ initialServices, tenantId }: { initi
                   </div>
                </div>
 
-               <h3 className="text-lg font-bold text-white mb-4 group-hover:text-primary transition-colors">{srv.name}</h3>
+               <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 uppercase tracking-widest">
+                     {srv.category || "Cabelo"}
+                  </span>
+               </div>
+               <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">{srv.name}</h3>
+               <p className="text-[10px] text-zinc-500 line-clamp-2 mb-4 h-8">{srv.description || "Sem descrição disponível."}</p>
                
                <div className="flex items-center justify-between pt-4 border-t border-[#1a1a1a]">
                   <div className="flex flex-col">
@@ -180,6 +206,34 @@ export default function ServiceManagement({ initialServices, tenantId }: { initi
                               className="w-full bg-[#111] border border-[#222] rounded-xl pl-9 pr-4 py-3 text-white focus:outline-none focus:border-primary transition-all shadow-inner"
                             />
                          </div>
+                      </div>
+                   </div>
+
+                   <div className="space-y-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase">Categoria Visual</label>
+                         <select 
+                           value={formData.category}
+                           onChange={(e) => setFormData({...formData, category: e.target.value})}
+                           className="w-full bg-[#111] border border-[#222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-all text-xs appearance-none"
+                         >
+                            <option value="Cabelo">CABELO / CORTE</option>
+                            <option value="Barba">BARBA / NAVALHA</option>
+                            <option value="Combo">COMBOS / PACOTES</option>
+                            <option value="Estética">ESTÉTICA / PELE</option>
+                            <option value="Outros">OUTROS</option>
+                         </select>
+                      </div>
+
+                      <div className="space-y-2">
+                         <label className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase">Descrição (O que inclui?)</label>
+                         <textarea 
+                           value={formData.description}
+                           onChange={(e) => setFormData({...formData, description: e.target.value})}
+                           placeholder="Ex: Inclui lavagem, toalha quente e finalização com pomada premium." 
+                           rows={4}
+                           className="w-full bg-[#111] border border-[#222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-all shadow-inner text-xs resize-none"
+                         />
                       </div>
                    </div>
 

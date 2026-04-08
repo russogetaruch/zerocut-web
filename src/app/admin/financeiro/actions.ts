@@ -51,8 +51,8 @@ export async function finalizeAndPay(
 ) {
   const supabase = await createClient();
 
-  // Chamada RPC Atômica V3: Suporta Bandeiras e Taxas
-  const { error } = await supabase.rpc('finalize_appointment_with_transaction', {
+  // Chamada RPC Atômica V6: Financeiro + Fidelidade + Taxas
+  const { error } = await supabase.rpc('finalize_appointment_with_transaction_v6', {
     p_appointment_id: appointmentId,
     p_tenant_id: tenantId,
     p_payment_method: method,

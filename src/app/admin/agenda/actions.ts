@@ -55,7 +55,8 @@ export async function updateTenant(tenantId: string, data: {
   logo_url: string,
   tagline?: string,
   description?: string,
-  banner_url?: string
+  banner_url?: string,
+  loyalty_target_cuts?: number
 }) {
   const supabase = await createClient();
 
@@ -67,7 +68,8 @@ export async function updateTenant(tenantId: string, data: {
       logo_url: data.logo_url,
       tagline: data.tagline,
       description: data.description,
-      banner_url: data.banner_url
+      banner_url: data.banner_url,
+      loyalty_target_cuts: data.loyalty_target_cuts
     })
     .eq('id', tenantId);
 

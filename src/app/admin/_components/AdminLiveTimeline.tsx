@@ -57,10 +57,10 @@ export function AdminLiveTimeline({ initialAppointments, tenantId }: { initialAp
     <div className="space-y-10">
       {/* Vital Stats (Agora Dinâmicos no Cliente) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <VitalBox title="FILA DE ESPERA" value={waitingCount < 10 ? `0${waitingCount}` : waitingCount.toString()} icon={<Clock size={16}/>} isAlert={waitingCount > 0} />
-        <VitalBox title="CONCLUÍDOS HOJE" value={completedCount < 10 ? `0${completedCount}` : completedCount.toString()} icon={<CheckCircle2 size={16}/>} />
-        <VitalBox title="RECEITA ROTITIVA" value={`R$ ${dailyRevenue.toFixed(2)}`} icon={<Activity size={16}/>} isGold />
-        <VitalBox title="FECHAMENTO EST." value={`R$ ${estClosing.toFixed(2)}`} icon={<Activity size={16}/>} />
+        <VitalBox title="WAITING_QUEUE" value={waitingCount < 10 ? `0${waitingCount}` : waitingCount.toString()} icon={<Clock size={16}/>} isAlert={waitingCount > 0} />
+        <VitalBox title="COMPLETED_TODAY" value={completedCount < 10 ? `0${completedCount}` : completedCount.toString()} icon={<CheckCircle2 size={16}/>} />
+        <VitalBox title="LIVE_REVENUE" value={`R$ ${dailyRevenue.toFixed(2)}`} icon={<Activity size={16}/>} isGold />
+        <VitalBox title="EST_CLOSING" value={`R$ ${estClosing.toFixed(2)}`} icon={<Activity size={16}/>} />
       </div>
 
       {/* TimelineBoard */}

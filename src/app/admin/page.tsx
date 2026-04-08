@@ -8,9 +8,11 @@ import {
   TrendingUp,
   Users,
   Calendar,
-  Plus
+  Plus,
+  Star
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { AdminHeaderActions } from "./_components/AdminHeaderActions";
 import { AdminLiveTimeline } from "./_components/AdminLiveTimeline";
 import { PerformanceMonitor } from "./_components/PerformanceMonitor";
 
@@ -37,24 +39,14 @@ export default async function TenantAdminDashboard() {
         <div className="space-y-1">
           <div className="flex items-center gap-3">
              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(212,175,55,1)]"></div>
-             <h2 className="text-3xl font-serif font-black text-white tracking-tight uppercase italic">Insights & Performance</h2>
+             <h2 className="text-3xl font-serif font-black text-white tracking-tight uppercase italic text-shadow-glow">Insights & Performance</h2>
           </div>
           <p className="font-mono text-zinc-500 text-[10px] tracking-[0.4em] uppercase flex items-center gap-2">
              <Database size={10} className="text-primary" /> Sistema: <span className="text-zinc-300">{tenantOwner?.name || "Ambiente_Nativo"}</span>
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
-           <div className="hidden lg:flex items-center gap-6 px-6 border-r border-white/5 h-10">
-              <div className="text-right">
-                 <p className="text-[9px] text-zinc-500 uppercase tracking-widest leading-none mb-1">Status do Server</p>
-                 <p className="text-[10px] text-emerald-500 font-bold font-mono">ESTÁVEL_ONLINE</p>
-              </div>
-           </div>
-           <button className="flex items-center gap-2 bg-primary hover:bg-white text-black px-6 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(212,175,55,0.15)] active:scale-95 group">
-              <Plus size={14} className="group-hover:rotate-90 transition-transform" /> Novo Agendamento
-           </button>
-        </div>
+        <AdminHeaderActions tenantSlug={tenantOwner?.slug || ""} tenantName={tenantOwner?.name || ""} />
       </div>
 
       {/* Grid de Métricas Rápidas (Poderia ser substituído por Widgets Reais) */}

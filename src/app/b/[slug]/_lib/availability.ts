@@ -15,11 +15,11 @@ export async function getAvailableSlots(tenantId: string, professionalId: string
     .eq('day_of_week', dayOfWeek)
     .single();
 
-  // FALLBACK: Se o lojista não configurou nada, assume 08:00 às 19:00 (Exceto Domingo se quiser ser rígido, mas vamos deixar aberto para evitar bug de "lotado")
+  // FALLBACK: open_time e close_time são os nomes corretos do schema
   if (!workingHours) {
     workingHours = {
-       opening_time: '08:00:00',
-       closing_time: '19:00:00',
+       open_time: '09:00:00',
+       close_time: '19:00:00',
        is_closed: false
     };
   }
@@ -43,8 +43,8 @@ export async function getAvailableSlots(tenantId: string, professionalId: string
   const slots: string[] = [];
   
   // Usamos h:mm:ss para garantir o parse correto do banco
-  let current = parse(workingHours.opening_time, workingHours.opening_time.includes(':') && workingHours.opening_time.split(':').length === 3 ? 'HH:mm:ss' : 'HH:mm', new Date());
-  const end = parse(workingHours.closing_time, workingHours.closing_time.includes(':') && workingHours.closing_time.split(':').length === 3 ? 'HH:mm:ss' : 'HH:mm', new Date());
+  let current = parse(workingHours.open_time, workingHours.open_time.includes(':') && workingHours.open_time.split(':').length === 3 ? 'HH:mm:ss' : 'HH:mm', new Date());
+  const end = parse(workingHours.close_time, workingHours.close_time.includes(':') && workingHours.close_time.split(':').length === 3 ? 'HH:mm:ss' : 'HH:mm', new Date());
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const now = new Date();

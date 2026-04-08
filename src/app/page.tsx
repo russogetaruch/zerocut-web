@@ -294,10 +294,10 @@ export default function Home() {
            </div>
            
            <div className="flex gap-10 text-[9px] font-mono font-black text-zinc-600 uppercase tracking-widest">
-              <span>Termos</span>
+              <span>Termos de Uso</span>
               <span>Privacidade</span>
               <span>Blog</span>
-              <span>API_Docs</span>
+              <span>Documentação</span>
            </div>
 
            <p className="text-[9px] font-mono text-zinc-700 uppercase tracking-widest">

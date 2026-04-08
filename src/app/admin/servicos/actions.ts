@@ -3,7 +3,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function saveService(tenantId: string, serviceData: { id?: string, name: string, price: number, duration: number }) {
+export async function saveService(
+  tenantId: string, 
+  serviceData: { 
+    id?: string, 
+    name: string, 
+    price: number, 
+    duration: number,
+    category?: string,
+    description?: string
+  }
+) {
   const supabase = await createClient();
 
   let result;
@@ -15,7 +25,9 @@ export async function saveService(tenantId: string, serviceData: { id?: string, 
       .update({
         name: serviceData.name,
         price: serviceData.price,
-        duration_minutes: serviceData.duration
+        duration_minutes: serviceData.duration,
+        category: serviceData.category || 'Cabelo',
+        description: serviceData.description
       })
       .eq('id', serviceData.id);
   } else {
@@ -27,7 +39,9 @@ export async function saveService(tenantId: string, serviceData: { id?: string, 
           tenant_id: tenantId,
           name: serviceData.name,
           price: serviceData.price,
-          duration_minutes: serviceData.duration
+          duration_minutes: serviceData.duration,
+          category: serviceData.category || 'Cabelo',
+          description: serviceData.description
         }
       ]);
   }

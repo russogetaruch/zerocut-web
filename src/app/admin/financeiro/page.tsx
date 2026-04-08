@@ -15,9 +15,13 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { DateRangeFilter } from "../_components/DateRangeFilter";
+import { FinanceHeaderActions } from "../_components/FinanceHeaderActions";
+
 export const dynamic = "force-dynamic";
 
-export default async function FinanceDashboardPage() {
+export default async function FinanceDashboardPage({ searchParams }: { searchParams: { startDate?: string, endDate?: string } }) {
+  const { startDate, endDate } = await searchParams;
   const supabase = await createClient();
 
   // Buscar o tenant ativo
@@ -30,12 +34,17 @@ export default async function FinanceDashboardPage() {
 
   if (!tenant) return <div>Loja não encontrada.</div>;
 
-  // Buscar transações
-  const { data: transactions } = await supabase
+  // Buscar transações com filtro de data
+  let query = supabase
     .from('transactions')
     .select('*')
     .eq('tenant_id', tenant.id)
     .order('created_at', { ascending: false });
+
+  if (startDate) query = query.gte('created_at', startDate);
+  if (endDate) query = query.lte('created_at', endDate + 'T23:59:59');
+
+  const { data: transactions } = await query;
 
   const totalGross = transactions?.filter(t => t.type === 'INCOME').reduce((acc, t) => acc + Number(t.amount), 0) || 0;
   const totalNet = transactions?.filter(t => t.type === 'INCOME').reduce((acc, t) => acc + Number(t.net_amount || t.amount), 0) || 0;
@@ -61,26 +70,29 @@ export default async function FinanceDashboardPage() {
                 FINANCEIRO_HUB
              </h2>
           </div>
-          <p className="font-mono text-zinc-500 text-[10px] tracking-[0.4em] uppercase">
-             Fluxo de Caixa e Inteligência de Receita Líquida
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="font-mono text-zinc-500 text-[10px] tracking-[0.4em] uppercase">
+              Fluxo de Caixa e Inteligência de Receita Líquida
+            </p>
+            {startDate && (
+              <span className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                PERIODO_FILTRADO
+              </span>
+            )}
+          </div>
         </div>
         
-        <div className="flex gap-3">
-           <button className="px-6 py-3 bg-primary text-black font-black text-[10px] tracking-widest uppercase rounded-xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)]">
-              + LANÇAR_DESPESA
-           </button>
-           <button className="px-6 py-3 bg-zinc-900 text-white font-black text-[10px] tracking-widest uppercase rounded-xl border border-[#222] hover:bg-zinc-800 transition-all">
-              GERAR_RELATORIO
-           </button>
+        <div className="flex flex-col md:flex-row items-center gap-6">
+           <DateRangeFilter />
+           <FinanceHeaderActions />
         </div>
       </div>
 
       {/* Grid de Cards Financeiros */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
          
          {/* SALDO EM CONTA (LÍQUIDO) */}
-         <div className="bg-[#080808] border border-[#1a1a1a] p-8 rounded-[2rem] relative overflow-hidden group">
+         <div className="lg:col-span-4 bg-[#080808] border border-[#1a1a1a] p-8 rounded-[2rem] relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <DollarSign size={80} className="text-primary" />
             </div>
@@ -88,47 +100,67 @@ export default async function FinanceDashboardPage() {
             <h3 className="text-4xl font-serif font-black text-white tracking-tight">
                R$ {balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
-            <div className="mt-6 flex items-center gap-2 text-[10px] font-mono text-green-500 uppercase tracking-widest">
-               <TrendingUp size={12} /> Atualizado Agora
+            <div className="mt-6 flex flex-col gap-3">
+               <div className="flex items-center gap-2 text-[10px] font-mono text-green-500 uppercase tracking-widest">
+                  <TrendingUp size={12} /> Atualizado Agora_
+               </div>
+               <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
+                  <p className="text-[9px] font-mono text-zinc-500 uppercase">Ticket Médio (Líquido)</p>
+                  <p className="text-sm font-bold text-white">R$ {(totalNet / (transactions?.filter(t => t.type === 'INCOME').length || 1)).toFixed(2)}</p>
+               </div>
             </div>
          </div>
 
-         {/* RECEITA LÍQUIDA HOJE */}
-         <div className="bg-[#080808] border border-[#1a1a1a] p-8 rounded-[2rem] relative overflow-hidden group">
-            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Líquido de Hoje</p>
-            <h3 className="text-4xl font-serif font-black text-primary tracking-tight">
-               R$ {todayNet.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </h3>
-            <div className="mt-6 flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-               <ArrowUpRight size={12} className="text-primary" /> +8% Real vs Ontem
-            </div>
-         </div>
+         {/* ANALYTICS: DISTRIBUIÇÃO MÉTODO (DONUT CSS) */}
+         <div className="lg:col-span-4 bg-[#080808] border border-primary/20 p-8 rounded-[2rem] shadow-2xl relative">
+            <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-8 text-center">Revenue_by_Method</p>
+            
+            <div className="flex flex-col items-center justify-center gap-8">
+               <div className="relative w-32 h-32 flex items-center justify-center">
+                  <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-zinc-900"/>
+                    {/* Exemplo Simplificado de Pie Chart Híbrido */}
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="251.2" strokeDashoffset={251.2 * (1 - (totalNet / (totalGross || 1)))} className="text-primary"/>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                     <p className="text-xs font-mono text-zinc-500 uppercase leading-none">Net_Ratio</p>
+                     <p className="text-xl font-black text-white">{((totalNet / (totalGross || 1)) * 100).toFixed(0)}%</p>
+                  </div>
+               </div>
 
-         {/* TOTAL MAQUININHA (FEE) */}
-         <div className="bg-red-500/5 border border-red-500/10 p-8 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-               <Percent size={40} className="text-red-500" />
-            </div>
-            <p className="text-[10px] font-mono text-red-500/60 uppercase tracking-widest mb-4">Taxas Retidas (MDR)</p>
-            <h3 className="text-4xl font-serif font-black text-white tracking-tight">
-               R$ {totalFees.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </h3>
-            <div className="mt-6 flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-               <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Custo Operacional
+               <div className="w-full grid grid-cols-2 gap-4">
+                  {['PIX', 'DINHEIRO', 'CREDITO', 'DEBITO'].map((m) => {
+                    const mTotal = transactions?.filter(t => t.payment_method === m && t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+                    const mCount = transactions?.filter(t => t.payment_method === m && t.type === 'INCOME').length || 0;
+                    if (mTotal === 0) return null;
+                    return (
+                      <div key={m} className="bg-black/40 border border-white/5 p-3 rounded-xl">
+                        <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest mb-1">{m}</p>
+                        <p className="text-xs font-black text-white">R$ {mTotal.toFixed(0)}</p>
+                        <p className="text-[8px] font-mono text-zinc-500">{mCount} Atend.</p>
+                      </div>
+                    );
+                  })}
+               </div>
             </div>
          </div>
 
          {/* PENDÊNCIAS / FIADO */}
-         <div className="bg-[#080808] border-2 border-red-900/20 p-8 rounded-[2rem] relative overflow-hidden group">
+         <div className="lg:col-span-4 bg-[#080808] border border-red-900/30 p-8 rounded-[2rem] relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-5">
                <AlertCircle size={80} className="text-red-500" />
             </div>
-            <p className="text-[10px] font-mono text-red-500/60 uppercase tracking-widest mb-4">Total Fiado (Pendência)</p>
+            <p className="text-[10px] font-mono text-red-500 uppercase tracking-widest mb-4">PENDÊNCIAS_FIADO</p>
             <h3 className="text-4xl font-serif font-black text-red-500 tracking-tight">
                R$ {pendingFiado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
-            <div className="mt-6 flex items-center gap-2 text-[10px] font-mono text-red-700 uppercase tracking-widest">
-               <AlertCircle size={12} /> {transactions?.filter(t => t.payment_method === 'FIADO').length} comandas abertas
+            <div className="mt-8 bg-red-500/10 p-6 rounded-2xl border border-red-500/20">
+               <div className="flex items-center gap-2 text-[10px] font-mono text-red-700 uppercase tracking-widest mb-3">
+                  <AlertCircle size={12} /> {transactions?.filter(t => t.payment_method === 'FIADO').length} comandas abertas
+               </div>
+               <button className="w-full bg-red-500 text-white font-black text-[9px] py-2 rounded-lg hover:brightness-110 transition-all uppercase tracking-widest">
+                  Notificar Todos (Whats)
+               </button>
             </div>
          </div>
 

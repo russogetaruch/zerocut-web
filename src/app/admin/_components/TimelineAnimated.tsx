@@ -64,13 +64,19 @@ export function TimelineBlockAnimated({
            </div>
 
            <div className="flex items-center gap-4">
-              <span className={`px-2 py-1 rounded text-[10px] font-mono tracking-widest ${
+              <span className={`px-2 py-1 rounded text-[10px] font-mono tracking-widest uppercase ${
                  status === 'WAITING' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 
                  status === 'INCOMING' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
                  status === 'COMPLETED' ? 'bg-green-500/20 text-green-500 border border-green-500/30' :
+                 status === 'SCHEDULED' ? 'bg-primary/10 text-primary border border-primary/20' :
+                 status === 'CANCELED' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                  'bg-zinc-800 text-zinc-400 border border-zinc-700'
               }`}>
-                 [{status}]
+                 {status === 'WAITING' ? 'AGUARDANDO' : 
+                  status === 'INCOMING' ? 'CHEGANDO' :
+                  status === 'COMPLETED' ? 'CONCLUÍDO' : 
+                  status === 'SCHEDULED' ? 'AGENDADO' :
+                  status === 'CANCELED' ? 'CANCELADO' : status}
               </span>
               {status === 'COMPLETED' ? (
                 <Check size={16} className="text-green-500" />

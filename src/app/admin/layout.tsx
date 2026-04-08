@@ -23,6 +23,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { GlobalRealtimeProvider } from "./_components/GlobalRealtimeProvider";
 import { LiveRevenueBar } from "./_components/LiveRevenueBar";
+import { AdminSidebarActions } from "./_components/AdminSidebarActions";
+import { MobileNav } from "./_components/MobileNav";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -45,6 +47,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="min-h-screen bg-black flex flex-col md:flex-row font-sans text-zinc-300">
       <GlobalRealtimeProvider tenantId={tenant?.id || ""} />
+      
+      {/* Mobile Top Nav */}
+      <MobileNav tenant={tenant} publicUrl={publicUrl} />
+
       {/* Sidebar Lojista - Tech Minimalist */}
       <aside className="hidden md:flex w-64 flex-col bg-black border-r border-[#151515] h-screen sticky top-0 relative z-20">
         
@@ -61,64 +67,57 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </Link>
         </div>
         
-        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-6 relative">
+        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-8 relative">
           
-          {/* GRUPO PRINCIPAL */}
+          {/* GRUPO 1: DASHBOARD & FEEDBACK */}
           <div className="space-y-2">
-            <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Visão Geral</h4>
-            <NavItem href="/admin" icon={<Activity size={16} />} label="INSIGHTS & CRESCIMENTO" />
-            <NavItem href="/admin/configuracoes" icon={<Settings size={16} />} label="MEU ESPAÇO" />
+            <h4 className="px-4 text-[9px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 font-black">/DASHBOARD_&_SOCIAL</h4>
+            <NavItem href="/admin" icon={<LayoutDashboard size={14} />} label="INSIGHTS_CENTER" />
+            <NavItem href="/admin/chat" icon={<MessageSquare size={14} />} label="MESSAGEM_HUB" />
           </div>
 
-          {/* OPERACIONAL */}
+          {/* GRUPO 2: OPERAÇÕES DIÁRIAS */}
           <div className="space-y-2">
-            <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Operacional</h4>
-            <NavItem href="/admin/agenda" icon={<Calendar size={16} />} label="AGENDA INTELIGENTE" />
-            <NavItem href="/admin/servicos" icon={<Scissors size={16} />} label="CATÁLOGO DE SERVIÇOS" />
-            <NavItem href="/admin/profissionais" icon={<Users size={16} />} label="EQUIPE / BARBEIROS" />
-            <NavItem href="/admin/clientes" icon={<Users size={16} />} label="CARTEIRA DE CLIENTES" />
-            <NavItem href="/admin/configuracoes" icon={<Settings size={16} />} label="CONFIGURAÇÕES GERAIS" />
-            <NavItem href="/admin/chat" icon={<MessageSquare size={16} />} label="ATENDIMENTO (CHAT)" />
+            <h4 className="px-4 text-[9px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 font-black">/OPERAÇÕES</h4>
+            <NavItem href="/admin/agenda" icon={<Calendar size={14} />} label="AGENDA_LIVE" />
+            <NavItem href="/admin/servicos" icon={<Scissors size={14} />} label="CATÁLOGO_SERVIÇOS" />
+            <NavItem href="/admin/profissionais" icon={<Users size={14} />} label="EQUIPE_BARBEIROS" />
+            <NavItem href="/admin/clientes" icon={<Users size={14} />} label="CRM_FIDELIDADE" />
           </div>
 
-          {/* PRESENÇA DIGITAL */}
+          {/* GRUPO 3: FINANCEIRO & BI */}
           <div className="space-y-2">
-            <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Presença Digital</h4>
-            <NavItem href="/admin/vitrine" icon={<Monitor size={16} />} label="EDITAR VITRINE / LINK" />
-            <NavItem href={publicUrl} icon={<Globe size={16} />} label="VER SITE PÚBLICO" target="_blank" />
+            <h4 className="px-4 text-[9px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 font-black">/FINANCEIRO_BI</h4>
+            <NavItem href="/admin/financeiro" icon={<Wallet size={14} />} label="REVENUE_CAIXA" />
+            <NavItem href="/admin/vendas" icon={<TrendingUp size={14} />} label="PERFORMANCE_HUB" />
           </div>
 
-          {/* FINANCEIRO */}
-          <div className="flex flex-col gap-1 px-4">
-            <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Monitoramento</h4>
-            <NavItem href="/admin/financeiro" icon={<Wallet size={16} />} label="CAIXA & RECEITA" />
-            <NavItem href="/admin/vendas" icon={<TrendingUp size={16} />} label="ALTA PERFORMANCE" />
+          {/* GRUPO 4: ESTRATÉGIA & SITE */}
+          <div className="space-y-2">
+            <h4 className="px-4 text-[9px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 font-black">/PRESENÇA_SITE</h4>
+            <NavItem href="/admin/vitrine" icon={<Monitor size={14} />} label="EDITAR_VITRINE" />
+            <NavItem href="/admin/configuracoes" icon={<Settings size={14} />} label="CONFIGURAÇÕES" />
           </div>
 
-          <div className="mt-10 px-8">
-             <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl flex flex-col items-center text-center">
-                <DollarSign size={16} className="text-primary mb-2" />
-                <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-2 leading-tight">CAIXA RÁPIDO</p>
-                <button className="w-full bg-primary text-black font-black text-[9px] py-2 rounded-xl hover:scale-105 transition-transform uppercase tracking-tighter shadow-lg shadow-primary/20">
-                   + Lançar Valor
-                </button>
+          {/* QUICK ACTION CARD */}
+          <div className="px-4 pt-4">
+             <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl flex flex-col items-center text-center shadow-2xl">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mb-3">
+                   <DollarSign size={16} className="text-primary" />
+                </div>
+                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-3 leading-tight font-black">QUICK_CHECKOUT</p>
+                <Link 
+                  href="/admin/agenda?action=checkout"
+                  className="w-full bg-primary text-black font-black text-[10px] py-3 rounded-xl hover:scale-105 transition-transform uppercase tracking-widest shadow-lg shadow-primary/20"
+                >
+                   Finalizar Agora
+                </Link>
              </div>
-          </div>
-
-          {/* COMUNICAÇÃO */}
-          <div className="space-y-2">
-            <h4 className="px-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Comunicação e Mkt</h4>
-            <NavItem href="/admin/chat" icon={<Activity size={16} />} label="CENTRAL DE MENSAGENS" />
           </div>
 
         </nav>
 
-        <div className="p-6 border-t border-[#151515]">
-          <button className="flex items-center gap-3 w-full p-3 rounded-md text-zinc-500 hover:text-white hover:bg-[#111] border border-transparent hover:border-[#222] transition-all text-xs font-mono tracking-wider uppercase">
-            <LogOut size={16} />
-            Sair da Conta
-          </button>
-        </div>
+        <AdminSidebarActions publicUrl={publicUrl} />
       </aside>
 
       {/* Main Content */}

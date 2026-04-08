@@ -3,7 +3,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function saveProfessional(tenantId: string, profData: { id?: string, name: string, specialty: string, avatarUrl: string }) {
+export async function saveProfessional(
+  tenantId: string, 
+  profData: { 
+    id?: string, 
+    name: string, 
+    specialty: string, 
+    avatarUrl: string,
+    commissionPercentage?: number,
+    isActive?: boolean
+  }
+) {
   const supabase = await createClient();
 
   let result;
@@ -15,7 +25,9 @@ export async function saveProfessional(tenantId: string, profData: { id?: string
       .update({
         name: profData.name,
         specialty: profData.specialty,
-        avatar_url: profData.avatarUrl
+        avatar_url: profData.avatarUrl,
+        commission_percentage: profData.commissionPercentage || 0,
+        is_active: profData.isActive ?? true
       })
       .eq('id', profData.id);
   } else {
@@ -27,7 +39,9 @@ export async function saveProfessional(tenantId: string, profData: { id?: string
           tenant_id: tenantId,
           name: profData.name,
           specialty: profData.specialty,
-          avatar_url: profData.avatarUrl
+          avatar_url: profData.avatarUrl,
+          commission_percentage: profData.commissionPercentage || 0,
+          is_active: profData.isActive ?? true
         }
       ]);
   }

@@ -10,27 +10,30 @@ export function SettingsForm({ tenant }: { tenant: any }) {
   const [formData, setFormData] = useState({
     name: tenant.name || "",
     slug: tenant.slug || "",
+    tagline: tenant.tagline || "",
     address: tenant.address || "",
-    logo_url: tenant.logo_url || ""
+    logo_url: tenant.logo_url || "",
+    banner_url: tenant.banner_url || "",
+    loyalty_target_cuts: tenant.loyalty_target_cuts || 10
   });
   
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'banner') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploading(true);
     const supabase = createClient();
     const fileExt = file.name.split('.').pop();
-    const fileName = `${tenant.id}-logo-${Math.random()}.${fileExt}`;
+    const fileName = `${tenant.id}-${type}-${Math.random()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('avatars') // Usando o mesmo bucket 'avatars' para simplificar por enquanto
+      .from('avatars')
       .upload(filePath, file);
 
     if (uploadError) {
@@ -40,7 +43,7 @@ export function SettingsForm({ tenant }: { tenant: any }) {
     }
 
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-    setFormData(prev => ({ ...prev, logo_url: publicUrl }));
+    setFormData(prev => ({ ...prev, [type === 'logo' ? 'logo_url' : 'banner_url']: publicUrl }));
     setIsUploading(false);
   };
 
@@ -70,7 +73,7 @@ export function SettingsForm({ tenant }: { tenant: any }) {
                    <div className="text-zinc-600 font-serif text-3xl font-black">{formData.name.charAt(0)}</div>
                 )}
                 
-                <div onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
+                <div onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
                    <Camera className="text-white mb-2" size={24} />
                    <span className="text-[8px] font-mono font-bold text-white uppercase tracking-widest">Alterar Logo</span>
                 </div>
@@ -81,7 +84,7 @@ export function SettingsForm({ tenant }: { tenant: any }) {
                    </div>
                 )}
              </div>
-             <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+             <input type="file" ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} className="hidden" accept="image/*" />
              <div className="absolute -bottom-2 -right-2 bg-primary p-2 rounded-xl text-black shadow-lg">
                 <Tag size={14} />
              </div>
@@ -97,8 +100,8 @@ export function SettingsForm({ tenant }: { tenant: any }) {
                    <input 
                       type="text" 
                       value={formData.slug}
-                      onChange={(e) => setFormData({...formData, slug: e.target.value})}
-                      className="bg-transparent outline-none text-zinc-300 font-mono text-xs pl-2 flex-1"
+                      readOnly
+                      className="bg-transparent outline-none text-zinc-500 font-mono text-xs pl-2 flex-1 cursor-not-allowed"
                       placeholder="minha-barbearia"
                    />
                 </div>
@@ -110,8 +113,47 @@ export function SettingsForm({ tenant }: { tenant: any }) {
                    type="text" 
                    value={formData.name}
                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                   className="w-full bg-black p-4 rounded-2xl border border-[#1a1a1a] text-white font-bold tracking-tight outline-none focus:border-primary transition-colors"
+                   className="w-full bg-black p-4 rounded-2xl border border-[#1a1a1a] text-white font-bold tracking-tight outline-none focus:border-primary transition-colors focus:ring-1 focus:ring-primary"
                 />
+             </div>
+
+             <div className="space-y-1">
+                <label className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">Tagline / Slogan de Impacto</label>
+                <input 
+                   type="text" 
+                   value={formData.tagline}
+                   onChange={(e) => setFormData({...formData, tagline: e.target.value})}
+                   placeholder="Ex: Onde a tradição encontra o luxo."
+                   className="w-full bg-black p-4 rounded-2xl border border-[#1a1a1a] text-zinc-300 text-sm outline-none focus:border-primary transition-colors focus:ring-1 focus:ring-primary"
+                />
+             </div>
+          </div>
+       </div>
+
+       {/* Banner Customization */}
+       <div className="space-y-4 pt-8 border-t border-[#1a1a1a]">
+          <label className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.3em]">Ambiente Visual (Banner Vitrine)</label>
+          <div 
+             className="relative w-full h-48 rounded-[2rem] bg-zinc-900 border-2 border-dashed border-[#1a1a1a] hover:border-primary/50 transition-all overflow-hidden flex items-center justify-center cursor-pointer group"
+             onClick={() => {
+                const bannerInput = document.createElement('input');
+                bannerInput.type = 'file';
+                bannerInput.accept = 'image/*';
+                bannerInput.onchange = (e) => handleFileUpload(e as any, 'banner');
+                bannerInput.click();
+             }}
+          >
+             {formData.banner_url ? (
+                <img src={formData.banner_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Banner" />
+             ) : (
+                <div className="flex flex-col items-center gap-2 text-zinc-600">
+                   <Camera size={24} />
+                   <span className="text-[10px] font-mono uppercase tracking-widest">Escolher Banner de Fundo</span>
+                </div>
+             )}
+             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                <Camera className="text-white mb-2" size={24} />
+                <span className="text-[10px] font-mono font-black text-white uppercase tracking-widest">Trocar Imagem de Fundo</span>
              </div>
           </div>
        </div>
@@ -126,8 +168,25 @@ export function SettingsForm({ tenant }: { tenant: any }) {
                 value={formData.address}
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
                 placeholder="Ex: Rua das Navalhas, 123 - Centro, São Paulo"
-                className="w-full bg-black p-4 rounded-2xl border border-[#1a1a1a] text-zinc-300 text-sm outline-none focus:border-primary transition-colors"
+                className="w-full bg-black p-4 rounded-2xl border border-[#1a1a1a] text-zinc-300 text-sm outline-none focus:border-primary transition-colors focus:ring-1 focus:ring-primary"
              />
+          </div>
+
+          <div className="space-y-1 mt-6">
+             <label className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest flex items-center gap-2 text-primary">
+                <Tag size={10} className="text-primary" /> Meta do Clube VIP (Fidelidade)
+             </label>
+             <div className="flex items-center gap-4">
+                <input 
+                   type="number" 
+                   value={formData.loyalty_target_cuts}
+                   onChange={(e) => setFormData({...formData, loyalty_target_cuts: parseInt(e.target.value)})}
+                   className="w-32 bg-black p-4 rounded-2xl border border-[#1a1a1a] text-white font-bold text-lg outline-none focus:border-primary transition-colors text-center"
+                   min="1"
+                   max="100"
+                />
+                <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">Cortes registrados para o benefício grátis</p>
+             </div>
           </div>
 
           <div className="bg-primary/5 border border-primary/10 p-6 rounded-3xl mt-10">

@@ -31,11 +31,13 @@ import toast from "react-hot-toast";
 export function MasterAgenda({ 
   initialAppointments, 
   professionals,
-  services 
+  services,
+  intentAction
 }: { 
   initialAppointments: any[], 
   professionals: any[],
-  services: any[]
+  services: any[],
+  intentAction?: string
 }) {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
   const [appointments, setAppointments] = useState(initialAppointments);
@@ -84,6 +86,26 @@ export function MasterAgenda({
 
     return () => { supabase.removeChannel(channel); };
   }, [tenantId]);
+
+  // 1.1 INTENT ENGINE (Deep Linking)
+  useEffect(() => {
+    if (intentAction === 'new') {
+      setIsManualBookingOpen(true);
+      // Auto-atribuir ao primeiro profissional se houver
+      if (professionals.length > 0) {
+        setManualFormData(prev => ({ ...prev, professionalId: professionals[0].id }));
+      }
+    } else if (intentAction === 'checkout') {
+      // Tentar encontrar o primeiro agendamento pendente de hoje
+      const firstPending = dailyAppointments.find(a => a.status !== 'COMPLETED' && a.status !== 'CANCELED');
+      if (firstPending) {
+        setSelectedAppointment(firstPending);
+        // O modal de detalhes abrirá, e o admin pode clicar em Checkout
+      } else {
+        toast("Nenhum agendamento pendente para checkout rápido agora.");
+      }
+    }
+  }, [intentAction]);
 
   const handleFinalize = (method: 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO', brand: string, fee: number, net: number) => {
     if (!selectedAppointment || !tenantId) return;
@@ -260,7 +282,16 @@ export function MasterAgenda({
                       <div>
                         <h4 className="text-white font-black uppercase italic tracking-tighter text-xl">{apt.client_name}</h4>
                         <div className="flex items-center gap-3 mt-1">
-                           <span className="text-[10px] font-mono text-primary flex items-center gap-1"><Scissors size={10} /> {apt.services?.name}</span>
+                           <span className="text-[10px] font-mono text-primary flex items-center gap-1"><Scissors size={10} /> {apt.services?.name || 'Vip Experience'}</span>
+                           <span className={`px-2 py-0.5 rounded text-[8px] font-mono uppercase tracking-widest ${
+                              apt.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 
+                              apt.status === 'CANCELED' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                              'bg-primary/10 text-primary border border-primary/20'
+                           }`}>
+                              {apt.status === 'COMPLETED' ? 'FINALIZADO' : 
+                               apt.status === 'CANCELED' ? 'CANCELADO' :
+                               apt.status === 'SCHEDULED' ? 'AGENDADO' : apt.status}
+                           </span>
                         </div>
                       </div>
                    </div>

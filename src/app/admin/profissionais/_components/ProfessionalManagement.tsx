@@ -16,13 +16,25 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
   const supabase = createClient();
 
   // Form State
-  const [formData, setFormData] = useState({ name: "", specialty: "", avatarUrl: "" });
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    specialty: "", 
+    avatarUrl: "", 
+    commissionPercentage: "30.00",
+    isActive: true
+  });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
   function openNew() {
     setEditingProf(null);
-    setFormData({ name: "", specialty: "", avatarUrl: "" });
+    setFormData({ 
+      name: "", 
+      specialty: "", 
+      avatarUrl: "", 
+      commissionPercentage: "30.00",
+      isActive: true
+    });
     setPreviewUrl("");
     setSelectedFile(null);
     setIsDrawerOpen(true);
@@ -30,7 +42,13 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
 
   function openEdit(prof: any) {
     setEditingProf(prof);
-    setFormData({ name: prof.name, specialty: prof.specialty || "", avatarUrl: prof.avatar_url || "" });
+    setFormData({ 
+      name: prof.name, 
+      specialty: prof.specialty || "", 
+      avatarUrl: prof.avatar_url || "",
+      commissionPercentage: prof.commission_percentage?.toString() || "0.00",
+      isActive: prof.is_active ?? true
+    });
     setPreviewUrl(prof.avatar_url || "");
     setSelectedFile(null);
     setIsDrawerOpen(true);
@@ -79,7 +97,9 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
       id: editingProf?.id,
       name: formData.name,
       specialty: formData.specialty,
-      avatarUrl: finalAvatarUrl
+      avatarUrl: finalAvatarUrl,
+      commissionPercentage: parseFloat(formData.commissionPercentage),
+      isActive: formData.isActive
     });
 
     setIsSubmitting(false);
@@ -138,7 +158,18 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
                </div>
 
                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors">{prof.name}</h3>
-               <p className="text-xs text-zinc-500 font-mono tracking-wide uppercase mb-6">{prof.specialty || "Profissional"}</p>
+               <p className="text-xs text-zinc-500 font-mono tracking-wide uppercase mb-3">{prof.specialty || "Profissional"}</p>
+               
+               <div className="flex items-center gap-2 mb-6">
+                  <span className="text-[10px] bg-primary/10 text-primary px-3 py-1 rounded-full font-black border border-primary/20">
+                    {prof.commission_percentage}% COMISSÃO
+                  </span>
+                  {!prof.is_active && (
+                    <span className="text-[10px] bg-red-500/10 text-red-500 px-3 py-1 rounded-full font-black border border-red-500/20">
+                      INATIVO
+                    </span>
+                  )}
+               </div>
                
                <div className="flex gap-2 w-full pt-4 border-t border-[#151515]">
                   <button 
@@ -195,7 +226,7 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
                          ) : (
                             <div className="flex flex-col items-center text-zinc-600 group-hover:text-primary transition-colors">
                                <Camera size={32} strokeWidth={1} />
-                               <span className="text-[8px] font-mono tracking-tighter uppercase mt-2">Upload.Photo</span>
+                               <span className="text-[8px] font-mono tracking-tighter uppercase mt-2">Escolher Foto</span>
                             </div>
                          )}
                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -246,6 +277,30 @@ export default function ProfessionalManagement({ initialProfessionals, tenantId 
                               placeholder="Ex: Barboterapia / Fade" 
                               className="w-full bg-[#111] border border-[#222] rounded-xl pl-9 pr-4 py-3 text-white focus:outline-none focus:border-primary transition-all"
                             />
+                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                            <label className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase">Comissão (%)</label>
+                            <input 
+                               type="number" 
+                               step="0.01"
+                               value={formData.commissionPercentage}
+                               onChange={(e) => setFormData({...formData, commissionPercentage: e.target.value})}
+                               className="w-full bg-[#111] border border-[#222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-all font-mono"
+                            />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase">Status Operacional</label>
+                            <select 
+                               value={formData.isActive ? "true" : "false"}
+                               onChange={(e) => setFormData({...formData, isActive: e.target.value === "true"})}
+                               className="w-full bg-[#111] border border-[#222] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-all font-mono text-[10px]"
+                            >
+                               <option value="true">ATIVO / DISPONÍVEL</option>
+                               <option value="false">INATIVO / PAUSADO</option>
+                            </select>
                          </div>
                       </div>
                    </div>

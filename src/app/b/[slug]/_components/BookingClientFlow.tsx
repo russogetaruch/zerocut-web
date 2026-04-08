@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronRight, User, Clock } from "lucide-react";
+import { X, ChevronRight, User, Clock, CalendarDays, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createBooking } from "../actions";
 import { getAvailableSlots } from "../_lib/availability";
+import { format, addDays, isSameDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function BookingClientFlow({ tenantId, services, professionals }: { tenantId: string, services: any[], professionals: any[] }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -13,6 +15,8 @@ export default function BookingClientFlow({ tenantId, services, professionals }:
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [success, setSuccess] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  
+  const next7Days = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i));
 
   // States do Agendamento
   const [selection, setSelection] = useState({
@@ -20,17 +24,24 @@ export default function BookingClientFlow({ tenantId, services, professionals }:
      serviceName: "",
      professionalId: "",
      professionalName: "",
+     date: format(new Date(), 'yyyy-MM-dd'),
      time: "",
-     clientName: ""
+     clientName: "",
+     clientPhone: ""
   });
 
   async function selectProfessional(profId: string, profName: string) {
-    setIsLoadingSlots(true);
     setSelection({ ...selection, professionalId: profId, professionalName: profName });
-    const today = new Date().toISOString().split('T')[0];
-    const slots = await getAvailableSlots(tenantId, profId, today);
-    setAvailableSlots(slots);
     setBookingStep(3);
+  }
+
+  async function selectDate(date: Date) {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    setIsLoadingSlots(true);
+    setSelection({ ...selection, date: dateStr, time: "" });
+    
+    const slots = await getAvailableSlots(tenantId, selection.professionalId, dateStr);
+    setAvailableSlots(slots);
     setIsLoadingSlots(false);
   }
 
@@ -44,73 +55,51 @@ export default function BookingClientFlow({ tenantId, services, professionals }:
       serviceId: selection.serviceId,
       serviceName: selection.serviceName,
       professionalId: selection.professionalId,
+      date: selection.date, // Agora passamos a data real
       time: selection.time,
-      clientName: selection.clientName
+      clientName: selection.clientName,
+      clientPhone: selection.clientPhone
     });
     setIsSubmitting(false);
     if (result?.error) {
       alert(result.error);
-      // Se for erro de duplicidade, volta para o passo de horário para tentar outro
-      if (result.error.includes("ocupado")) {
-         setBookingStep(3);
-         setSelection({ ...selection, time: "" });
-      }
     } else {
       setSuccess(true);
     }
-  }
-
-  function renderSuccess() {
-    return (
-      <div className="space-y-4 text-center py-8 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/30">
-          <Clock size={32} />
-        </div>
-        <h4 className="text-xl font-bold text-white relative inline-block">Agendado com Sucesso!</h4>
-        <p className="text-zinc-500 text-sm">Te esperamos lá, {selection.clientName}!</p>
-        <div className="bg-black border border-border p-4 rounded-xl inline-block text-left mt-4">
-          <p className="text-zinc-400 text-xs">Corte: <span className="text-white font-medium">{selection.serviceName}</span></p>
-          <p className="text-zinc-400 text-xs">Barbeiro: <span className="text-white font-medium">{selection.professionalName}</span></p>
-          <p className="text-zinc-400 text-xs">Dia: <span className="text-white font-medium">Hoje às {selection.time}</span></p>
-        </div>
-        <button onClick={() => { setIsBookingOpen(false); setSuccess(false); setBookingStep(1); }} className="block w-full mt-6 bg-primary text-black font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors">
-          Fechar
-        </button>
-      </div>
-    );
   }
 
   return (
     <>
       <button
         onClick={() => setIsBookingOpen(true)}
-        className="bg-primary hover:bg-primary/90 text-black font-bold py-4 px-8 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all transform hover:scale-105 active:scale-95 w-full md:w-auto text-lg"
+        className="bg-primary hover:bg-white text-black font-black py-4 px-10 rounded-2xl shadow-[0_15px_40px_rgba(212,175,55,0.3)] transition-all transform hover:scale-105 active:scale-95 w-full md:w-auto text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 group"
       >
-        Agendar Agora
+        <CalendarDays size={16} className="group-hover:rotate-12 transition-transform" /> 
+        Reservar_Agora
       </button>
 
       <AnimatePresence>
         {isBookingOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsBookingOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
             />
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.9, opacity: 0, y: 40 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-surface w-full max-w-lg rounded-3xl border border-border flex flex-col max-h-[90vh] overflow-hidden"
+              exit={{ scale: 0.9, opacity: 0, y: 40 }}
+              className="relative bg-[#080808] w-full max-w-xl rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]"
             >
               <div className="p-5 border-b border-border flex justify-between items-center bg-[#0a0a0a] z-10 text-white">
                 <h3 className="font-serif font-bold text-lg text-primary tracking-wide">
                   {success ? "Agendamento Confirmado" :
-                    bookingStep === 1 ? "1. Escolha o Serviço" :
-                      bookingStep === 2 ? "2. Escolha o Profissional" :
-                        "3. Data e Confirmação"}
+                    bookingStep === 1 ? "1. Selecione o Estilo" :
+                      bookingStep === 2 ? "2. Escolha o Especialista" :
+                        "3. Data e Horário"}
                 </h3>
                 <button onClick={() => setIsBookingOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400 hover:text-white">
                   <X size={20} />
@@ -118,124 +107,157 @@ export default function BookingClientFlow({ tenantId, services, professionals }:
               </div>
 
               <div className="p-6 overflow-y-auto flex-1 bg-[#050505]">
-                {success && renderSuccess()}
-
-                {/* Step 1: Services (LENDO DO BANCO) */}
-                {!success && bookingStep === 1 && (
-                  <div className="space-y-3">
-                    {services?.length > 0 ? services.map((srv) => (
-                      <div key={srv.id} onClick={() => { setSelection({ ...selection, serviceName: srv.name, serviceId: srv.id }); setBookingStep(2); }} className="p-4 border border-[#1a1a1a] bg-[#0a0a0a] rounded-xl cursor-pointer hover:border-primary transition-all flex justify-between items-center group relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-transparent group-hover:bg-primary transition-colors"></div>
-                        <div className="pl-3">
-                          <p className="font-bold text-white text-md md:text-lg tracking-wide truncate max-w-[200px]">{srv.name}</p>
-                          <p className="text-zinc-500 text-xs mt-1 font-mono uppercase tracking-widest">Estimativa: {srv.duration_minutes} min</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-primary whitespace-nowrap">R$ {srv.price}</span>
-                          <ChevronRight className="text-zinc-700 group-hover:text-primary transition-colors" />
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="text-center py-6 text-zinc-500 font-mono text-xs uppercase tracking-widest">Catalogo sendo montado. Volte em breve.</div>
-                    )}
-                    
-                    <div className="pt-6 border-t border-[#1a1a1a] text-center">
-                       <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest mb-3">Já é cliente ZERØCUT?</p>
-                       <a 
-                         href={`/auth?next=${window.location.pathname}`}
-                         className="text-xs font-bold text-primary hover:text-white transition-colors"
-                       >
-                         ENTRAR PARA AGENDAR_RÁPIDO
-                       </a>
+                {success ? (
+                  <div className="space-y-4 text-center py-8 animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/30">
+                      <CheckCircle2 size={32} />
                     </div>
+                    <h4 className="text-xl font-bold text-white uppercase italic tracking-tighter">Vaga Garantida!</h4>
+                    <p className="text-zinc-500 text-sm">Tudo certo, {selection.clientName.split(' ')[0]}!</p>
+                    <div className="bg-black/50 border border-white/5 p-6 rounded-[2rem] text-left mt-4 space-y-2">
+                      <p className="text-zinc-400 text-xs">Procedimento: <span className="text-white font-black">{selection.serviceName}</span></p>
+                      <p className="text-zinc-400 text-xs">Artista: <span className="text-white font-black">{selection.professionalName}</span></p>
+                      <p className="text-zinc-400 text-xs">Agenda: <span className="text-primary font-mono">{format(new Date(selection.date), "dd/MM")} às {selection.time}</span></p>
+                    </div>
+                    <button onClick={() => { setIsBookingOpen(false); setSuccess(false); setBookingStep(1); }} className="block w-full mt-8 bg-primary text-black font-black py-4 rounded-xl hover:bg-white transition-all uppercase tracking-widest text-[10px]">
+                      CONCLUIR_FLUXO
+                    </button>
                   </div>
-                )}
-
-                {/* Step 2: Professionals (DINÂMICO) */}
-                {!success && bookingStep === 2 && (
-                  <div className="space-y-3">
-                    <button onClick={() => setBookingStep(1)} className="text-xs font-mono tracking-widest text-zinc-500 hover:text-primary mb-3">{"< RECUE PARA SERVIÇOS"}</button>
-
-                    {isLoadingSlots ? (
-                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Consultando Agenda...</p>
-                      </div>
-                    ) : (
-                      professionals && professionals.length > 0 ? professionals.map((prof, idx) => (
-                        <div key={prof.id} onClick={() => selectProfessional(prof.id, prof.name)} className="p-4 border border-[#1a1a1a] bg-[#0a0a0a] rounded-xl cursor-pointer hover:border-primary transition-all flex items-center gap-5 group">
-
-                          <div className="relative">
-                            <div className="w-14 h-14 rounded-full bg-zinc-900 border-2 border-[#1a1a1a] group-hover:border-primary flex items-center justify-center text-xl font-serif text-white transition-all shadow-inner overflow-hidden">
-                              {prof.avatar_url ? (
-                                <img src={prof.avatar_url} alt={prof.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="relative z-10">{prof.name.charAt(0)}</span>
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                ) : (
+                  <>
+                    {/* Step 1: Services */}
+                    {bookingStep === 1 && (
+                      <div className="grid grid-cols-1 gap-4">
+                        {services?.map((srv) => (
+                          <div key={srv.id} onClick={() => { setSelection({ ...selection, serviceName: srv.name, serviceId: srv.id }); setBookingStep(2); }} className="p-5 border border-[#1a1a1a] bg-[#0a0a0a] rounded-2xl cursor-pointer hover:border-primary transition-all flex justify-between items-center group relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-transparent group-hover:bg-primary transition-colors"></div>
+                            <div>
+                              <p className="font-bold text-white text-lg tracking-tight group-hover:text-primary transition-colors">{srv.name}</p>
+                              <p className="text-zinc-600 text-[10px] mt-1 font-mono uppercase tracking-widest">{srv.duration_minutes} MINUTOS</p>
                             </div>
-                            {idx === 0 && <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-black"></span>}
+                            <div className="flex items-center gap-4">
+                              <span className="font-black text-white whitespace-nowrap text-sm">R$ {srv.price}</span>
+                              <ChevronRight className="text-zinc-800 group-hover:text-primary transition-colors" />
+                            </div>
                           </div>
-
-                          <div className="flex-1">
-                            <p className="font-bold text-white text-md tracking-wide">{prof.name}</p>
-                            <p className="text-zinc-500 text-xs font-mono tracking-wide">{prof.specialty || "Profissional"}</p>
-                          </div>
-                          <ChevronRight className="text-zinc-700 group-hover:text-primary transition-colors" />
-                        </div>
-                      )) : (
-                        <div className="text-center py-6 text-zinc-500 font-mono text-xs uppercase tracking-widest">Equipe em treinamento. Volte em breve.</div>
-                      )
+                        ))}
+                      </div>
                     )}
-                  </div>
-                )}
 
-                {/* Step 3: Rigid Time Blocks & Name Input */}
-                {!success && bookingStep === 3 && (
-                  <div className="space-y-6">
-                    <button onClick={() => setBookingStep(2)} className="text-xs font-mono tracking-widest text-zinc-500 hover:text-primary mb-1">{"< RECUE PARA BARBEIRO"}</button>
+                    {/* Step 2: Professionals */}
+                    {bookingStep === 2 && (
+                      <div className="space-y-4">
+                        <button onClick={() => setBookingStep(1)} className="text-[9px] font-mono tracking-widest text-zinc-600 hover:text-white mb-2 uppercase flex items-center gap-2">
+                           <ChevronRight size={10} className="rotate-180" /> Recuar para Serviços
+                        </button>
 
-                    <div>
-                      <p className="text-sm text-zinc-400 mb-3 font-medium">Horários disponíveis para Hoje:</p>
-                      {availableSlots.length > 0 ? (
-                        <div className="grid grid-cols-3 gap-3">
-                          {availableSlots.map((hr) => (
-                            <button
-                              key={hr}
-                              onClick={() => setSelection({ ...selection, time: hr })}
-                              className={`py-3 rounded-lg border font-mono text-center transition-all ${selection.time === hr
-                                  ? 'bg-primary/10 border-primary text-primary font-bold scale-105'
-                                  : 'bg-[#111] border-[#222] text-zinc-400 hover:border-zinc-500'
-                                }`}
-                            >
-                              {hr}
-                            </button>
+                        <div className="grid grid-cols-1 gap-4">
+                          {professionals?.map((prof) => (
+                            <div key={prof.id} onClick={() => selectProfessional(prof.id, prof.name)} className="p-5 border border-[#1a1a1a] bg-[#0a0a0a] rounded-2xl cursor-pointer hover:border-primary transition-all flex items-center gap-5 group">
+                              <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-white/5 group-hover:border-primary/40 overflow-hidden transition-all grayscale group-hover:grayscale-0">
+                                <img src={prof.avatar_url || `https://i.pravatar.cc/150?u=${prof.id}`} alt={prof.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-white text-md tracking-tight">{prof.name}</p>
+                                <p className="text-zinc-600 text-[10px] font-mono tracking-widest uppercase italic">{prof.specialty || "Mestre Barbeiro"}</p>
+                              </div>
+                              <ChevronRight className="text-zinc-800 group-hover:text-primary transition-colors" />
+                            </div>
                           ))}
                         </div>
-                      ) : (
-                        <div className="text-center py-8 bg-[#0a0a0a] border border-dashed border-[#222] rounded-2xl">
-                           <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-1">Agenda Lotada</p>
-                           <p className="text-[10px] text-zinc-600">Não há mais horários para hoje com este profissional.</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {selection.time && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-4 border-t border-[#1a1a1a]">
-                        <label className="block text-sm text-zinc-400 mb-2">Quase lá! Como se chama?</label>
-                        <input
-                          type="text"
-                          placeholder="Digite seu nome (Ex: João Silva)"
-                          className="w-full bg-black border border-[#222] focus:border-primary rounded-xl px-4 py-3 text-white outline-none font-medium mb-4 transition-colors"
-                          onChange={(e) => setSelection({ ...selection, clientName: e.target.value })}
-                        />
-
-                        <button disabled={isSubmitting} onClick={handleFinishBooking} className="w-full bg-primary text-black font-bold py-4 rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)] disabled:opacity-50">
-                          {isSubmitting ? "Sincronizando sua vaga..." : "CONFIRMAR CORTE"}
-                        </button>
-                      </motion.div>
+                      </div>
                     )}
-                  </div>
+
+                    {/* Step 3: Date & Time */}
+                    {bookingStep === 3 && (
+                      <div className="space-y-8">
+                        <button onClick={() => setBookingStep(2)} className="text-[9px] font-mono tracking-widest text-zinc-600 hover:text-white mb-2 uppercase flex items-center gap-2">
+                           <ChevronRight size={10} className="rotate-180" /> Recuar para Equipe
+                        </button>
+
+                        {/* Date Scroller */}
+                        <div className="space-y-4">
+                           <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest italic">/01. Selecione o dia_</p>
+                           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                              {next7Days.map((day) => {
+                                 const isSelected = isSameDay(day, new Date(selection.date));
+                                 return (
+                                    <button 
+                                       key={day.toISOString()}
+                                       onClick={() => selectDate(day)}
+                                       className={`flex flex-col items-center justify-center min-w-[70px] h-20 rounded-2xl border transition-all ${isSelected ? 'bg-primary border-primary text-black' : 'bg-[#0a0a0a] border-white/5 text-zinc-500 hover:border-zinc-700'}`}
+                                    >
+                                       <span className="text-[9px] font-mono uppercase tracking-widest mb-1">{format(day, "EEE", { locale: ptBR })}</span>
+                                       <span className="text-xl font-black font-serif italic tracking-tighter">{format(day, "dd")}</span>
+                                    </button>
+                                 );
+                              })}
+                           </div>
+                        </div>
+
+                        {/* Times Grid */}
+                        <div className="space-y-4">
+                           <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest italic">/02. Horários disponíveis_</p>
+                           {isLoadingSlots ? (
+                              <div className="py-12 flex flex-col items-center justify-center gap-4">
+                                 <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                              </div>
+                           ) : (
+                              <div className="grid grid-cols-4 gap-3">
+                                 {availableSlots.map((time) => (
+                                    <button 
+                                       key={time}
+                                       onClick={() => setSelection({ ...selection, time })}
+                                       className={`py-3 rounded-xl border font-mono text-[10px] font-bold transition-all ${selection.time === time ? 'bg-primary/20 border-primary text-primary' : 'bg-[#0a0a0a] border-white/5 text-zinc-600 hover:border-zinc-700'}`}
+                                    >
+                                       {time}
+                                    </button>
+                                 ))}
+                                 {availableSlots.length === 0 && (
+                                    <p className="col-span-full text-center py-6 text-zinc-600 font-mono text-[9px] uppercase tracking-widest">Sem disponibilidade para este dia.</p>
+                                 )}
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Confirm Form */}
+                        {selection.time && (
+                           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-8 border-t border-white/5 space-y-6">
+                              <div className="space-y-3">
+                                 <div className="relative">
+                                    <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" />
+                                    <input 
+                                       type="text" 
+                                       placeholder="COMO SE CHAMA?_"
+                                       value={selection.clientName}
+                                       onChange={(e) => setSelection({ ...selection, clientName: e.target.value })}
+                                       className="w-full bg-[#050505] border border-white/5 rounded-2xl px-12 py-4 text-xs font-mono text-white focus:border-primary outline-none transition-all"
+                                    />
+                                 </div>
+                                 <div className="relative">
+                                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={14} />
+                                    <input 
+                                       type="tel" 
+                                       placeholder="WHATSAPP (OPCIONAL)_"
+                                       value={selection.clientPhone}
+                                       onChange={(e) => setSelection({ ...selection, clientPhone: e.target.value })}
+                                       className="w-full bg-[#050505] border border-white/5 rounded-2xl px-12 py-4 text-xs font-mono text-white focus:border-primary outline-none transition-all"
+                                    />
+                                 </div>
+                              </div>
+
+                              <button 
+                                 onClick={handleFinishBooking}
+                                 disabled={isSubmitting || !selection.clientName}
+                                 className="w-full bg-primary text-black font-black py-5 rounded-[2rem] shadow-[0_10px_30px_rgba(212,175,55,0.2)] hover:bg-white transition-all uppercase tracking-[0.3em] text-[10px] disabled:opacity-50"
+                              >
+                                 {isSubmitting ? "REGISTRANDO AGORA..." : "CONFIRMAR_RESERVA_DE_ELITE"}
+                              </button>
+                           </motion.div>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </motion.div>
@@ -244,4 +266,24 @@ export default function BookingClientFlow({ tenantId, services, professionals }:
       </AnimatePresence>
     </>
   );
+}
+
+function Smartphone(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+      <path d="M12 18h.01" />
+    </svg>
+  )
 }

@@ -14,7 +14,7 @@ export function PerformanceMonitor() {
             
             <div className="flex justify-between items-center mb-10">
                <div>
-                  <h3 className="font-mono text-[10px] text-primary tracking-[0.3em] uppercase mb-1">Network_Performance</h3>
+                  <h3 className="font-mono text-[10px] text-primary tracking-[0.3em] uppercase mb-1">Performance_Sistema</h3>
                   <p className="text-lg font-serif font-bold text-white tracking-wide">Faturamento da Semana</p>
                </div>
                <div className="text-right">
@@ -37,7 +37,7 @@ export function PerformanceMonitor() {
                           className="w-full bg-gradient-to-t from-primary/10 to-primary/40" 
                         />
                      </div>
-                     <span className="text-[9px] text-zinc-700 font-mono tracking-tighter uppercase">Day.{i+1}</span>
+                     <span className="text-[9px] text-zinc-700 font-mono tracking-tighter uppercase">Dia.{i+1}</span>
                   </div>
                ))}
             </div>
@@ -50,7 +50,7 @@ export function PerformanceMonitor() {
                   <div className="p-3 bg-primary/10 rounded-xl text-primary border border-primary/20">
                      <Activity size={18} />
                   </div>
-                  <span className="text-[10px] text-primary/60 font-mono tracking-widest uppercase">Target.Reached</span>
+                  <span className="text-[10px] text-primary/60 font-mono tracking-widest uppercase">Meta.Atingida</span>
                </div>
                <div>
                   <p className="text-4xl font-mono font-black text-white mb-1">94%</p>
@@ -63,10 +63,10 @@ export function PerformanceMonitor() {
                   <div className="p-3 bg-zinc-900 rounded-xl text-zinc-500 border border-zinc-800">
                      <Clock size={18} />
                   </div>
-                  <span className="text-[10px] text-zinc-600 font-mono tracking-widest uppercase">Avg.Time</span>
+                  <span className="text-[10px] text-zinc-600 font-mono tracking-widest uppercase">Tempo.Medio</span>
                </div>
                <div>
-                  <p className="text-4xl font-mono font-black text-white mb-1">42m</p>
+                  <p className="text-4xl font-mono font-black text-white mb-1">42min</p>
                   <p className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase">Tempo Médio de Corte</p>
                </div>
             </div>
