@@ -39,45 +39,57 @@ export default async function TenantPublicPage({ params }: { params: Promise<{ s
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-zinc-300 selection:bg-primary selection:text-black">
       
-      {/* 1. HERO SECTION - IMMERSIVE OVERLAY */}
-      <section className="relative w-full h-[90vh] flex flex-col items-center justify-center overflow-hidden">
-        {/* Banner with Heavy Gradients */}
+       {/* 1. HERO SECTION - IMMERSIVE OVERLAY */}
+      <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Banner with Deep Parallax Look */}
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-soft-light transition-transform duration-1000 hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center opacity-40 grayscale hover:grayscale-0 transition-all duration-1000 scale-110"
           style={{ backgroundImage: `url(${tenant.banner_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80'})` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-[#050505]"></div>
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#050505] to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black"></div>
+        <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black to-transparent"></div>
         
-        {/* Floating Accent Backgrounds */}
-        <div className="absolute top-[20%] left-[10%] w-64 h-64 bg-primary/20 blur-[120px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-primary/10 blur-[150px] rounded-full"></div>
+        {/* Glowing Accents */}
+        <div className="absolute top-[30%] left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-primary/5 blur-[180px] rounded-full"></div>
 
-        <div className="relative z-10 text-center px-6 max-w-5xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
-          <div className="flex justify-center mb-8">
-            <div className="p-1.5 bg-primary/20 backdrop-blur-xl rounded-[2.5rem] border border-primary/20 shadow-2xl shadow-primary/10">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-zinc-950 rounded-[2.3rem] overflow-hidden border border-white/5 relative group">
-                <img src={tenant.logo_url || '/logo.png'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={tenant.name} />
-              </div>
-            </div>
+        <div className="relative z-10 text-center px-6 max-w-6xl w-full flex flex-col items-center">
+          
+          {/* Logo - Ajuste 1: Circular Elite Frame */}
+          <div className="relative mb-12 group cursor-default">
+             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+             <div className="w-32 h-32 md:w-44 md:h-44 p-1 rounded-full bg-gradient-to-tr from-primary/40 via-white/10 to-transparent relative z-10 shadow-2xl">
+                <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/5 shadow-inner">
+                   <img src={tenant.logo_url || '/logo.png'} className="w-[85%] h-[85%] object-contain scale-110 group-hover:scale-125 transition-transform duration-1000" alt={tenant.name} />
+                </div>
+             </div>
           </div>
 
-          <h1 className="text-6xl md:text-9xl font-serif font-black text-white tracking-tight mb-6 uppercase drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] italic">
-             {tenant.name}
-          </h1>
-          
-          <div className="flex flex-col items-center gap-6">
-             <div className="flex items-center gap-3 px-6 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
-                <ShieldCheck size={14} className="text-primary" />
-                <span className="text-[10px] font-mono text-zinc-400 tracking-[0.3em] font-black uppercase">BARBEARIA_AUTORIZADA_ZERØCUT</span>
+          <div className="space-y-4 mb-10">
+             <div className="flex items-center justify-center gap-4 mb-2">
+                <span className="h-px w-12 bg-gradient-to-r from-transparent to-primary/50"></span>
+                <span className="text-primary font-mono text-[9px] tracking-[0.5em] uppercase font-black">EST. 2026</span>
+                <span className="h-px w-12 bg-gradient-to-l from-transparent to-primary/50"></span>
              </div>
              
-             <p className="text-zinc-500 font-medium text-sm md:text-lg max-w-2xl leading-relaxed">
-                {tenant.tagline || 'Excelência em cada detalhe. Onde a tradição encontra o luxo contemporâneo.'}
-             </p>
+             <h1 className="text-7xl md:text-[10rem] font-serif font-black text-white tracking-tighter leading-[0.85] uppercase italic drop-shadow-2xl">
+               {tenant.name}
+             </h1>
+             
+             <div className="inline-flex items-center gap-4 bg-primary/5 backdrop-blur-sm border border-primary/20 px-8 py-3 rounded-2xl">
+                <p className="text-primary font-mono text-[10px] tracking-[0.4em] uppercase font-black">
+                   {tenant.tagline || 'REDEFININDO O CONCEITO DE ESTILO'}
+                </p>
+             </div>
+          </div>
 
-             {/* Main CTA */}
-             <div className="mt-4">
+          <div className="flex flex-col items-center gap-8 max-w-xl">
+             <div className="flex items-center gap-3 text-zinc-500 hover:text-white transition-colors cursor-default">
+                <MapPin size={16} className="text-primary" />
+                <p className="text-xs font-medium uppercase tracking-[0.2em]">{tenant.address || 'Localização Prime'}</p>
+             </div>
+
+             <div className="w-full scale-110 md:scale-125">
                 <BookingClientFlow 
                    tenantId={tenant.id} 
                    services={catalog || []} 
@@ -85,12 +97,13 @@ export default async function TenantPublicPage({ params }: { params: Promise<{ s
                 />
              </div>
           </div>
+
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-bounce">
-           <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest">Descubra</span>
-           <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent"></div>
+        <div className="absolute bottom-12 flex flex-col items-center gap-4 group cursor-pointer opacity-40 hover:opacity-100 transition-opacity">
+           <span className="text-[9px] font-mono text-white uppercase tracking-[0.6em] animate-pulse">Explore_Excellence</span>
+           <div className="w-px h-16 bg-gradient-to-b from-primary via-primary/20 to-transparent"></div>
         </div>
       </section>
 
